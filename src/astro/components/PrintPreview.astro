@@ -1,0 +1,169 @@
+---
+interface Props {
+  documentSelector: string;
+  styleSelector?: string;
+  statusSelector?: string;
+  readyEvent?: string;
+}
+
+const {
+  documentSelector,
+  styleSelector,
+  statusSelector,
+  readyEvent,
+} = Astro.props;
+---
+
+<script>
+  // Astro emits this component script once per page, so one script must initialize
+  // every PrintPreview instance on the page.
+  const previewSources = document.querySelectorAll<HTMLElement>(".print-preview-source");
+
+  if (previewSources.length > 0) {
+    const { Previewer } = await import("pagedjs");
+
+    for (const previewSource of previewSources) {
+      const documentSelector = previewSource.getAttribute("data-document-selector");
+      const styleSelector = previewSource.getAttribute("data-style-selector") || "style";
+      const statusSelector = previewSource.getAttribute("data-status-selector");
+      const readyEvent = previewSource.getAttribute("data-ready-event");
+      const sourceDocument = documentSelector
+        ? previewSource.querySelector(documentSelector)
+        : undefined;
+      const status = statusSelector ? document.querySelector(statusSelector) : undefined;
+      const previewTarget = previewSource.nextElementSibling;
+
+      if (!sourceDocument || !previewTarget?.classList.contains("print-preview-root")) {
+        if (status) status.textContent = "Print preview source missing";
+        console.error(`Print preview source not found for selector: ${documentSelector ?? ""}`);
+        continue;
+      }
+
+      const sourceStyles = getComputedStyle(sourceDocument);
+      const cssVar = (name: string) => sourceStyles.getPropertyValue(name).trim();
+      const pageSize = `${cssVar("--aprint-page-width")} ${cssVar("--aprint-page-height")}`;
+      const pageMargin = `${cssVar("--aprint-page-margin-top")} ${cssVar("--aprint-page-margin-x")} ${cssVar("--aprint-page-margin-bottom")}`;
+
+      const stylesheets = [
+        ...Array.from(document.querySelectorAll("link[rel='stylesheet']")).map(
+          (link) => (link as HTMLLinkElement).href,
+        ),
+        ...Array.from(document.querySelectorAll(styleSelector))
+          .filter((style) => !style.hasAttribute("data-print-preview-ignore"))
+          .map((style) => ({
+            [window.location.href]: style.textContent ?? "",
+          })),
+        {
+          [window.location.href]: `
+            @page {
+              size: ${pageSize};
+              margin: ${pageMargin};
+            }
+          `,
+        },
+      ];
+
+      const previewer = new Previewer();
+      const previewContent = document.createDocumentFragment();
+      const previewDocument = sourceDocument.cloneNode(true);
+      if (previewDocument instanceof Element) {
+        previewDocument.classList.add("print-preview-document");
+      }
+      previewContent.append(previewDocument);
+
+      previewer
+        .preview(previewContent, stylesheets, previewTarget)
+        .then((flow: { pages: unknown[] }) => {
+          if (status) status.textContent = `${flow.pages.length} pages`;
+          if (readyEvent) window.dispatchEvent(new Event(readyEvent));
+        })
+        .catch((error: unknown) => {
+          previewSource.style.display = "block";
+          previewTarget.setAttribute("hidden", "");
+          if (status) {
+            status.innerHTML = '<i style="color: red">Print preview failed</i>';
+          }
+          console.error(error);
+        });
+    }
+  }
+</script>
+
+<div
+  class="print-preview-source"
+  data-document-selector={documentSelector}
+  data-style-selector={styleSelector}
+  data-status-selector={statusSelector}
+  data-ready-event={readyEvent}
+>
+  <slot />
+</div>
+<div class="print-preview-root" aria-live="polite" />
+
+<style is:inline data-print-preview-ignore>
+  /*
+    Caller-owned page variables:
+    required: --aprint-page-width, --aprint-page-height, --aprint-page-margin-top,
+    --aprint-page-margin-x, --aprint-page-margin-bottom
+    optional: --aprint-print-preview-top-offset
+  */
+
+  @media screen {
+    :root {
+      background: color-mix(in srgb, var(--aprint-preview-paper-strong, #ede5d2) 34%, white);
+    }
+
+    body {
+      min-width: 0;
+      overflow-x: auto;
+      background: transparent;
+    }
+
+    .print-preview-source {
+      display: none;
+    }
+
+    .print-preview-root {
+      box-sizing: border-box;
+      width: max-content;
+      min-width: 100%;
+      padding: calc(var(--aprint-print-preview-top-offset, 0px) + 32px) 24px 48px;
+    }
+
+    .print-preview-root .print-preview-document {
+      display: block;
+    }
+
+    .print-preview-root .pagedjs_pages {
+      display: grid;
+      width: max-content;
+      margin-inline: auto;
+      gap: 28px;
+    }
+
+    .print-preview-root .pagedjs_page {
+      background: white;
+      box-shadow: 0 14px 40px color-mix(in srgb, var(--aprint-preview-ink, #383431) 16%, transparent);
+    }
+
+    .print-preview-root .pagedjs_margin-top,
+    .print-preview-root .pagedjs_margin-bottom {
+      background: color-mix(in srgb, var(--aprint-preview-warm, #f1d87f) 16%, transparent);
+    }
+
+    .print-preview-root .pagedjs_margin-left,
+    .print-preview-root .pagedjs_margin-right {
+      background: color-mix(in srgb, var(--aprint-preview-accent, #3b6c73) 7%, transparent);
+    }
+  }
+
+  @media print {
+    .print-preview-source {
+      display: block;
+    }
+
+    .print-preview-root {
+      display: none;
+    }
+  }
+</style>

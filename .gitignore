@@ -1,0 +1,7 @@
+node_modules
+.astro
+dist
+.aprint*
+site-dist
+public
+.DS_Store

@@ -1,0 +1,147 @@
+---
+import Document from "../components/Document.astro";
+import PrintPreview from "../components/PrintPreview.astro";
+
+interface Props {
+  title?: string;
+  secondaryTitle?: string;
+  normalHref: string;
+  previewHref: string;
+  pdfHref?: string;
+  printPreview?: boolean;
+}
+
+const {
+  title,
+  secondaryTitle,
+  normalHref,
+  previewHref,
+  pdfHref,
+  printPreview = false,
+} = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <script>
+      document.querySelector("[data-print-button]")?.addEventListener("click", () => {
+        window.print();
+      });
+    </script>
+
+    <nav class="aprint-nav" aria-label="Document navigation">
+      <a class="aprint-wordmark" href="/">Home</a>
+      <div class="aprint-nav-links">
+        {printPreview && <span class="aprint-preview-status" aria-live="polite">Paginating...</span>}
+        {printPreview ? <a href={normalHref}>Normal View</a> : <a href={previewHref}>Paged Preview</a>}
+        <button class="aprint-nav-button" type="button" data-print-button>Print</button>
+        {pdfHref && <a href={pdfHref} target="_blank">Download PDF</a>}
+      </div>
+    </nav>
+
+    {
+      printPreview ? (
+        <PrintPreview
+          documentSelector=".aprint-document"
+          styleSelector="style:not([data-preview-ignore])"
+          statusSelector=".aprint-preview-status"
+          readyEvent="aprint-print-preview:ready"
+        >
+          <Document title={title} secondaryTitle={secondaryTitle}>
+            <slot />
+          </Document>
+        </PrintPreview>
+      ) : (
+        <Document title={title} secondaryTitle={secondaryTitle}>
+          <slot />
+        </Document>
+      )
+    }
+
+    <style is:inline data-preview-ignore>
+      :root {
+        --aprint-nav-height: 43px;
+        --aprint-print-preview-top-offset: var(--aprint-nav-height);
+      }
+
+      .aprint-nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        width: var(--aprint-page-width);
+        height: var(--aprint-nav-height);
+        margin: 0 auto calc(-1 * var(--aprint-nav-height));
+        padding: 10px var(--aprint-page-margin-x);
+        background: rgb(250 249 247 / 0.88);
+        backdrop-filter: blur(10px);
+        color: #64615d;
+        font: 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+        white-space: nowrap;
+      }
+
+      .aprint-wordmark {
+        color: #181716;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+      }
+
+      .aprint-nav-links {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .aprint-nav-links a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .aprint-nav-button {
+        appearance: none;
+        border: 0;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .aprint-preview-status {
+        color: #64615d;
+        font-size: 0.82rem;
+      }
+
+      @media print {
+        html,
+        body {
+          background: white;
+        }
+
+        .aprint-nav {
+          display: none;
+        }
+      }
+    </style>
+  </body>
+</html>
+
+<style is:global>
+  html {
+    background: white;
+    color: #181716;
+  }
+
+  body {
+    margin: 0;
+  }
+</style>

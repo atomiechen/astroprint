@@ -1,0 +1,71 @@
+{
+  "name": "aprint",
+  "version": "0.1.0",
+  "description": "Markdown-first document authoring with live paged preview and PDF export.",
+  "keywords": [
+    "astro-integration",
+    "astro",
+    "pdf",
+    "paged-media"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./astro": {
+      "types": "./dist/astro/index.d.ts",
+      "import": "./dist/astro/index.js",
+      "default": "./dist/astro/index.js"
+    },
+    "./components/*.astro": "./src/astro/components/*.astro",
+    "./layouts/*.astro": "./src/astro/layouts/*.astro",
+    "./styles/*.css": "./src/astro/styles/*.css"
+  },
+  "peerDependencies": {
+    "astro": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": false
+    }
+  },
+  "bin": {
+    "aprint": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "src/astro/components",
+    "src/astro/layouts",
+    "src/astro/styles",
+    "src/astro/types",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"fs.rmSync('dist', { force: true, recursive: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "dev": "astro dev",
+    "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
+    "pdf": "tsx src/cli.ts pdf",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "pagedjs": "^0.4.3",
+    "remark-directive": "^4.0.0",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "astro": "^5.7.10",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,18 @@
+---
+import "../styles/academic-cv.css";
+
+interface Props {
+  title?: string;
+  secondaryTitle?: string;
+}
+
+const { title, secondaryTitle } = Astro.props;
+---
+
+<main class="aprint-document" aria-labelledby="aprint-title">
+  <h1 id="aprint-title" class="aprint-title">
+    <span>{title}</span>
+    {secondaryTitle && <span class="aprint-title-secondary">{secondaryTitle}</span>}
+  </h1>
+  <slot />
+</main>
