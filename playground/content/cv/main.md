@@ -27,7 +27,7 @@ I build contextually intelligent AI systems that transform human contexts, goals
 
 ## Education
 
-:::::two-column-list
+:::::ul{.two-col}
 
 ::::entry
 :::col

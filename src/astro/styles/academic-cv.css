@@ -107,20 +107,20 @@
   transform-origin: top;
 }
 
-.aprint-two-column-list {
+.two-col {
   margin: 0;
   padding-left: 0;
   list-style: none;
 }
 
-.aprint-two-column-list > li {
+.two-col > li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) max-content;
   gap: 12pt;
   align-items: start;
 }
 
-.aprint-two-column-list > li > :last-child {
+.two-col > li > :last-child {
   text-align: right;
 }
 
@@ -130,7 +130,7 @@
   margin-top: 3px;
 }
 
-.aprint-document ul:not(.aprint-two-column-list) {
+.aprint-document ul:not(.two-col) {
   margin: 0;
   padding-left: 12pt;
 }
@@ -174,12 +174,12 @@
     gap: 6px;
   }
 
-  .aprint-two-column-list > li {
+  .two-col > li {
     grid-template-columns: 1fr;
     gap: 0;
   }
 
-  .aprint-two-column-list > li > :last-child {
+  .two-col > li > :last-child {
     text-align: left;
   }
 }

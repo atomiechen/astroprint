@@ -4,7 +4,7 @@
 
 `aprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
 
-Calling `aprint()` with no options should only install the Markdown directive pipeline. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
+Calling `aprint()` with no options should only install the Markdown directive pipeline, including the built-in `:logolink` transform. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
 
 When a route config omits `route`, the default route is `/aprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
 
@@ -17,6 +17,26 @@ The package code lives in `src/`. Built-in Astro surfaces live under `src/astro/
 - `src/astro/styles/academic-cv.css` is the built-in academic CV document theme.
 
 The playground content lives under `playground/` and is useful for local validation.
+
+## Markdown Directives
+
+`remark-directive` is installed by the integration. `remarkAprintDirectives` should keep directives generic: known list aliases map to semantic tags (`ul`, `ol`, `li`, `entry`), unknown text directives default to `span`, and unknown leaf/container directives default to `div`. All directives get a default `aprint-{name}` class unless the caller overrides that directive with `directives`.
+
+Directive attributes should pass through to rendered HTML properties. Prefer standard directive attribute syntax for classes:
+
+```md
+:::::ul{.two-col}
+
+::::entry
+...
+::::
+
+:::::
+```
+
+Do not require a temporary `directives` entry in `astro.config.mjs` for the built-in two-column list styling. `[two-col]` is directive label/content syntax, not the preferred way to express a class.
+
+The `:logolink[...]` directive is handled by `src/lib/remark-logo-link-directives.ts` before the generic directive mapper. Keep specialized transforms like this separate from the generic mapper when they need to rewrite the Markdown AST.
 
 ## Commands
 

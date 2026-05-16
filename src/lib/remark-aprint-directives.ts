@@ -55,6 +55,36 @@ const addClassNames = (node: Record<string, unknown>, className: string | string
   data.hProperties = properties;
 };
 
+const applyAttributes = (node: Record<string, unknown>) => {
+  const attributes = node.attributes;
+
+  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
+    return;
+  }
+
+  const data = ensureNodeData(node);
+  const properties = (data.hProperties as Record<string, unknown> | undefined) ?? {};
+  const classes = [
+    ...toClassList(properties.className),
+    ...toClassList((attributes as Record<string, unknown>).class),
+    ...toClassList((attributes as Record<string, unknown>).className),
+  ];
+
+  for (const [key, value] of Object.entries(attributes as Record<string, unknown>)) {
+    if (key === "class" || key === "className" || value === null || value === undefined) {
+      continue;
+    }
+
+    properties[key] = value;
+  }
+
+  if (classes.length > 0) {
+    properties.className = [...new Set(classes)];
+  }
+
+  data.hProperties = properties;
+};
+
 const applyDirective = (node: Record<string, unknown>, directive: AprintDirectiveDefinition) => {
   const data = ensureNodeData(node);
 
@@ -84,17 +114,19 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
         // set default tag if not specified by user
         const {
           tag = node.type === "textDirective" ? "span" : "div",
-          className = `aprint-${node.name}`
+          className = `aprint-${node.name}`,
         } = userDirective;
         const directive = { tag, className } satisfies AprintDirectiveDefinition;
+        applyAttributes(node);
         applyDirective(node, directive);
       }
 
+      // Remove HTML comments
       if (node.type === "html" && typeof node.value === "string") {
         const value = node.value.trim();
         if (value.startsWith("<!--") && value.endsWith("-->") && parent?.children) {
           parent.children.splice(index, 1);
-          return index;
+          return index; // continue at the same index
         }
       }
     });
