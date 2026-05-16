@@ -1,6 +1,7 @@
 export { default } from "./astro/index.js";
 export { generatePdf } from "./pdf.js";
 export { defaultDirectives, remarkAprintDirectives } from "./lib/remark-aprint-directives.js";
+export { remarkLogoLinkDirectives } from "./lib/remark-logo-link-directives.js";
 export type {
   AprintDirectiveDefinition,
   AprintDirectiveOptions,

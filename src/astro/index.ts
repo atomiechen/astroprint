@@ -4,6 +4,7 @@ import { basename } from "node:path";
 import remarkDirective from "remark-directive";
 
 import { remarkAprintDirectives, type AprintDirectiveOptions } from "../lib/remark-aprint-directives.js";
+import { remarkLogoLinkDirectives } from "../lib/remark-logo-link-directives.js";
 
 export type AprintPdfConfig = {
   route: string;
@@ -40,6 +41,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
             remarkPlugins: [
               ...(config.markdown.remarkPlugins ?? []),
               remarkDirective,
+              remarkLogoLinkDirectives,
               [remarkAprintDirectives, { directives: options.directives }],
             ],
           },
