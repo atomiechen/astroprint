@@ -1,0 +1,58 @@
+:root {
+  --aprint-page-width: 210mm;
+  --aprint-page-height: 297mm;
+  --aprint-document-width: min(100%, var(--aprint-page-width));
+  --aprint-page-margin-top: 3rem;
+  --aprint-page-margin-x: 1rem;
+  --aprint-page-margin-bottom: 3rem;
+  --aprint-ink: #181716;
+  --aprint-link: #9a3947;
+  --aprint-preview-paper-strong: #ede5d2;
+  --aprint-preview-ink: #383431;
+  --aprint-preview-warm: #f1d87f;
+  --aprint-preview-accent: #3b6c73;
+  --aprint-font-size: 1rem;
+  --aprint-small-size: 0.9rem;
+  --aprint-heading-size: 1.2rem;
+  --aprint-title-size: 2rem;
+  --aprint-line-height: 1.5;
+  --aprint-serif-font: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --aprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+  --aprint-nav-height: 43px;
+  --aprint-print-preview-top-offset: var(--aprint-nav-height);
+}
+
+@page {
+  size: var(--aprint-page-width) var(--aprint-page-height);
+  margin: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);
+}
+
+.aprint-document {
+  box-sizing: border-box;
+  width: var(--aprint-document-width);
+  margin: 0 auto;
+  padding: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);
+  color: var(--aprint-ink);
+  font-family: var(--aprint-serif-font);
+  font-size: var(--aprint-font-size);
+  line-height: var(--aprint-line-height);
+}
+
+.aprint-title {
+  margin: 0;
+  font-family: inherit;
+  font-size: var(--aprint-title-size);
+  letter-spacing: 0;
+}
+
+.aprint-title-secondary {
+  font-family: var(--aprint-cjk-font);
+}
+
+@media print {
+  .aprint-document {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+}

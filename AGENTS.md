@@ -4,16 +4,19 @@
 
 `aprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
 
-Calling `aprint()` with no options should only install the Markdown directive pipeline, including the built-in `:logolink` transform. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
+Calling `aprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
 
 When a route config omits `route`, the default route is `/aprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
 
 The package code lives in `src/`. Built-in Astro surfaces live under `src/astro/`:
 
-- `src/astro/layouts/DocumentLayout.astro` is the default document shell.
-- `src/astro/components/Document.astro` is the default document root and imports the academic CV theme.
-- `src/astro/layouts/DocumentMarkdownLayout.astro` is the lightweight layout for standalone Markdown pages that want the default document surface.
+- `src/astro/components/Document.astro` is the theme-neutral default document root and title markup.
+- `src/astro/layouts/DocumentLayout.astro` is the theme-neutral document shell with navigation, print button, preview status, and preview branching.
+- `src/astro/layouts/AcademicDocumentLayout.astro` is the built-in academic route layout; it imports the academic CV theme and wraps `DocumentLayout.astro`.
+- `src/astro/layouts/DocumentMarkdownLayout.astro` is the theme-neutral lightweight layout for standalone Markdown pages that want the default document root.
+- `src/astro/layouts/AcademicMarkdownLayout.astro` is the built-in academic standalone Markdown layout; it imports the academic CV theme and wraps `DocumentMarkdownLayout.astro`.
 - `src/astro/components/PrintPreview.astro` is the document-agnostic Paged.js preview wrapper.
+- `src/astro/styles/base.css` defines the required baseline page, typography, and preview CSS variables plus neutral document root styles.
 - `src/astro/styles/academic-cv.css` is the built-in academic CV document theme.
 
 The playground content lives under `playground/` and is useful for local validation.
@@ -93,17 +96,20 @@ Put media conditions for processed Astro styles inside the CSS block as `@media 
 
 Keep document styles and preview chrome styles separate:
 
-- `academic-cv.css` should style document content and paged-media behavior.
-- `Document.astro` should own the built-in document root and title markup.
-- `DocumentLayout.astro` should own only the built-in navigation, print button, preview status, preview branching, and caller-owned preview chrome styles.
-- `DocumentMarkdownLayout.astro` should stay a lightweight Markdown-page path: it wraps content in `Document.astro` and does not add generated routes, navigation, preview, or PDF behavior.
-- `PrintPreview.astro` should remain document-agnostic and should not depend on `.aprint-document` beyond what callers pass through `documentSelector`.
+- `base.css` should define baseline variables and neutral document root behavior that every theme can inherit or override.
+- `academic-cv.css` should override baseline variables and style document content for the built-in academic theme.
+- `Document.astro` should own only theme-neutral document root and title markup and may import `base.css`; do not import theme CSS from it.
+- `DocumentLayout.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, and caller-owned preview chrome styles. Theme wrappers should import their own CSS and render this layout; they should not re-import `base.css` because `Document.astro` already does that.
+- `AcademicDocumentLayout.astro` should remain a thin academic theme wrapper around `DocumentLayout.astro`.
+- `DocumentMarkdownLayout.astro` should stay a lightweight theme-neutral Markdown-page path: it wraps content in `Document.astro` and does not add generated routes, navigation, preview, PDF behavior, or theme CSS.
+- `AcademicMarkdownLayout.astro` should remain a thin academic theme wrapper around `DocumentMarkdownLayout.astro`.
+- `PrintPreview.astro` should remain document-agnostic and should not depend on `.aprint-document` beyond what callers pass through `documentSelector`. Layouts that render their own document root without `Document.astro` should import `base.css` or define equivalent page variables and `@page` rules.
 
-Standalone Markdown pages can opt into the default document surface with:
+Standalone Markdown pages can opt into the built-in academic document surface with:
 
 ```md
 ---
-layout: aprint/layouts/DocumentMarkdownLayout.astro
+layout: aprint/layouts/AcademicMarkdownLayout.astro
 ---
 ```
 

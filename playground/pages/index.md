@@ -1,5 +1,5 @@
 ---
-layout: aprint/layouts/DocumentMarkdownLayout.astro
+layout: aprint/layouts/AcademicMarkdownLayout.astro
 title: Weihao Chen
 nameZh: 陈伟浩
 ---

@@ -1,6 +1,6 @@
 # aprint
 
-Astro-powered Markdown documents with normal web preview, paged preview, and WeasyPrint PDF export.
+Astro-powered Markdown documents with normal web preview, paged preview, and PDF export.
 
 `aprint` intentionally leans on Astro instead of reimplementing a dev server, Markdown pipeline, asset handling, image optimization, or HMR.
 
@@ -17,7 +17,7 @@ npx astro add aprint
 This installs `aprint` and updates `astro.config.mjs` with the default integration setup.
 Use the equivalent `pnpm astro add`, `yarn astro add`, or `bunx astro add` command if your project uses another package manager.
 
-With no options, `aprint()` only installs the Markdown directive pipeline. Use normal Astro pages and layouts when you want to control routes yourself:
+With no options, `aprint()` only installs Markdown processing plugins for directives, `:logolink`, BibTeX conversion, and HTML comment stripping. Use normal Astro pages and layouts when you want to control routes yourself:
 
 ```js title="astro.config.mjs"
 import { defineConfig } from "astro/config";
@@ -41,7 +41,7 @@ export default defineConfig({
       routes: [
         {
           collection: "cv",
-          layout: "aprint/layouts/DocumentLayout.astro",
+          layout: "aprint/layouts/AcademicDocumentLayout.astro",
           route: "/aprint",
           previewRoute: "/aprint-preview",
           defaultId: "main",
@@ -125,7 +125,7 @@ Beijing, China
 :::::
 ```
 
-The built-in academic CV theme styles these classes through `aprint/styles/academic-cv.css`, imported by `Document.astro`. Treat directives and CSS as a pair: directives give Markdown a small semantic vocabulary, and the stylesheet defines how that vocabulary renders.
+The built-in academic CV theme styles these classes through `aprint/styles/academic-cv.css`, imported by the academic layouts. Treat directives and CSS as a pair: directives give Markdown a small semantic vocabulary, and the stylesheet defines how that vocabulary renders.
 
 Use directive attributes for CSS classes, for example `:::::ul{.two-col}`. The bracket form is directive label/content syntax, so `:::ul[two-col]` is not recommended for classes.
 
@@ -174,7 +174,25 @@ Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { st
 
 ## Custom Layouts
 
-The built-in `DocumentLayout.astro` is only the default shell. It lives at `aprint/layouts/DocumentLayout.astro` and includes a small document nav and the paged preview wrapper. The document root and academic CV stylesheet live in `aprint/components/Document.astro`.
+`aprint` separates document structure from theme CSS. `aprint/components/Document.astro` owns the default document root and title markup, and imports `aprint/styles/base.css` for baseline page variables and neutral document root styles. `aprint/layouts/DocumentLayout.astro` owns the navigation, print button, and paged preview branching.
+
+The built-in academic theme uses the same extension path a user would use: `aprint/layouts/AcademicDocumentLayout.astro` imports `aprint/styles/academic-cv.css`, then renders `DocumentLayout.astro`. The academic stylesheet overrides base variables and adds theme-specific document styling. The default generated route uses this academic layout.
+
+When a custom theme wraps `DocumentLayout.astro`, it only needs to import its own stylesheet. `DocumentLayout.astro` renders `Document.astro`, and `Document.astro` already imports `base.css`.
+
+```astro title="src/layouts/MyThemedDocumentLayout.astro"
+---
+import type { ComponentProps } from "astro/types";
+import DocumentLayout from "aprint/layouts/DocumentLayout.astro";
+import "./my-document.css";
+
+type Props = ComponentProps<typeof DocumentLayout>;
+---
+
+<DocumentLayout {...Astro.props}>
+  <slot />
+</DocumentLayout>
+```
 
 To integrate with your own site chrome, point a document at your own Astro layout:
 
@@ -200,12 +218,13 @@ export default defineConfig({
 
 Your layout receives the rendered Markdown as its slot, plus document props:
 
-`PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
+`PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
 
 ```astro title="src/layouts/MyDocumentLayout.astro"
 ---
 import PrintPreview from "aprint/components/PrintPreview.astro";
-import "aprint/styles/academic-cv.css";
+import "aprint/styles/base.css";
+import "./my-document.css";
 
 const {
   title,
@@ -213,7 +232,6 @@ const {
   normalHref,
   previewHref,
   printPreview = false,
-  entry,
 } = Astro.props;
 ---
 
@@ -250,11 +268,11 @@ const {
 
 For a completely custom template, create your own layout and stylesheet, then use the directive classes generated by `aprint` (`.aprint-entry`, `.two-col`, and so on), or extend the directive mapping with the integration `directives` option.
 
-For standalone Markdown pages that should use the default document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout:
+For standalone Markdown pages that should use the built-in academic document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout:
 
 ```md title="src/pages/cv-notes.md"
 ---
-layout: aprint/layouts/DocumentMarkdownLayout.astro
+layout: aprint/layouts/AcademicMarkdownLayout.astro
 title: CV Notes
 secondaryTitle: Draft
 ---
@@ -290,4 +308,4 @@ If a route config omits `route`, it is injected at `/aprint/{collection}` to avo
 
 `pdf.output`, `pdf.outputDir`, `--output`, and `--output-dir` are normal filesystem paths, not Astro routes. `outputDir` is the base directory, and `output` is resolved inside it. Absolute `output` paths are used as-is. Relative paths are resolved from the project root/current working directory. For example, `outputDir: "public"` plus `/cv-notes` writes `public/cv-notes.pdf`; `outputDir: "public"` plus `output: "CV.pdf"` writes `public/CV.pdf`.
 
-CLI options override the matching config fields, so `--output-dir` overrides `pdf.outputDir`, and `--output` overrides `pdf.output`. If no output is specified, the filename is derived from the route: `/` becomes `index.pdf`, `/cv-notes` becomes `cv-notes.pdf`, and `/nested/report` becomes `report.pdf`. If `--port` is omitted, `aprint` asks the OS for an available temporary port; if `--port` is provided, that exact port is used.
+CLI options override the matching config fields, so `--backend` overrides `pdf.backend`, `--output-dir` overrides `pdf.outputDir`, and `--output` overrides `pdf.output`. If no output is specified, the filename is derived from the route: `/` becomes `index.pdf`, `/cv-notes` becomes `cv-notes.pdf`, and `/nested/report` becomes `report.pdf`. If `--port` is omitted, `aprint` asks the OS for an available temporary port; if `--port` is provided, that exact port is used.

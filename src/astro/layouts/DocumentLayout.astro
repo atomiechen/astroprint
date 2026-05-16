@@ -61,12 +61,8 @@ const {
     }
 
     <style is:inline data-preview-ignore>
-      :root {
-        --aprint-nav-height: 43px;
-        --aprint-print-preview-top-offset: var(--aprint-nav-height);
-      }
-
       .aprint-nav {
+        box-sizing: border-box;
         position: sticky;
         top: 0;
         z-index: 20;
@@ -74,7 +70,7 @@ const {
         justify-content: space-between;
         gap: 16px;
         align-items: center;
-        width: var(--aprint-page-width);
+        width: var(--aprint-document-width);
         height: var(--aprint-nav-height);
         margin: 0 auto calc(-1 * var(--aprint-nav-height));
         padding: 10px var(--aprint-page-margin-x);

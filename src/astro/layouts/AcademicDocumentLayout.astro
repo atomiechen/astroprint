@@ -1,0 +1,11 @@
+---
+import type { ComponentProps } from "astro/types";
+import DocumentLayout from "./DocumentLayout.astro";
+import "../styles/academic-cv.css";
+
+type Props = ComponentProps<typeof DocumentLayout>;
+---
+
+<DocumentLayout {...Astro.props}>
+  <slot />
+</DocumentLayout>

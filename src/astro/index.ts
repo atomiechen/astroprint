@@ -69,7 +69,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
             previewRoute,
           });
           const collection = routeConfig.collection;
-          const layout = routeConfig.layout ?? "aprint/layouts/DocumentLayout.astro";
+          const layout = routeConfig.layout ?? "aprint/layouts/AcademicDocumentLayout.astro";
           const defaultId = routeConfig.defaultId ?? "main";
           const configFile = new URL(`${name}.json`, codegenDir);
           const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
