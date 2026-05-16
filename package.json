@@ -53,7 +53,10 @@
     "dev": "astro dev",
     "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
     "pdf": "tsx src/cli.ts pdf",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "astro:build": "astro check && astro build",
+    "astro:preview": "astro preview",
+    "astro:check": "astro check"
   },
   "dependencies": {
     "commander": "^12.1.0",
@@ -62,8 +65,9 @@
     "unist-util-visit": "^5.0.0"
   },
   "devDependencies": {
-    "astro": "^5.7.10",
+    "@astrojs/check": "^0.9.9",
     "@types/node": "^22.10.2",
+    "astro": "^5.7.10",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
