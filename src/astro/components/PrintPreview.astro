@@ -20,7 +20,18 @@ const {
   const previewSources = document.querySelectorAll<HTMLElement>(".print-preview-source");
 
   if (previewSources.length > 0) {
-    const { Previewer } = await import("pagedjs");
+    type PagedJsModule = {
+      Previewer: new () => {
+        preview(
+          content?: Node,
+          stylesheets?: Array<string | Record<string, string>>,
+          renderTo?: Element,
+        ): Promise<{ pages: unknown[] }>;
+      };
+    };
+
+    // @ts-ignore -- pagedjs does not publish declarations; keep this local to the component.
+    const { Previewer } = (await import("pagedjs")) as PagedJsModule;
 
     for (const previewSource of previewSources) {
       const documentSelector = previewSource.getAttribute("data-document-selector");
