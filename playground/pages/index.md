@@ -4,7 +4,7 @@ title: Weihao Chen
 nameZh: 陈伟浩
 ---
 
-::::cv-meta
+::::meta
 :::col
 
 Department of Computer Science and Technology
@@ -48,7 +48,7 @@ Beijing, China
 
 ## Selected Publications
 
-::::publications
+::::ul
 
 :::entry
 CSCW 2025.

@@ -42,7 +42,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
               ...(config.markdown.remarkPlugins ?? []),
               remarkDirective,
               remarkLogoLinkDirectives,
-              [remarkAprintDirectives, { directives: options.directives }],
+              [remarkAprintDirectives, { directives: options.directives } satisfies AprintDirectiveOptions],
             ],
           },
         });

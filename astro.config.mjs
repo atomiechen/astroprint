@@ -20,6 +20,9 @@ export default defineConfig({
         outputDir: "public",
         backend: "weasyprint",
       },
+      directives: {
+        "two-column-list": { tag: "ul" },
+      }
     }),
   ],
 });

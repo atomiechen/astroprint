@@ -10,17 +10,13 @@ export type AprintDirectiveOptions = {
 };
 
 const defaultDirectives: Record<string, AprintDirectiveDefinition> = {
-  "cv-meta": { tag: "div", className: "aprint-meta" },
-  "two-column-list": { tag: "ul", className: "aprint-list aprint-list--two-column" },
-  "system-list": { tag: "ul", className: "aprint-list" },
-  publications: { tag: "ul", className: "aprint-publications" },
-  entry: { tag: "li", className: "aprint-entry" },
-  system: { tag: "li", className: "aprint-entry" },
-  heading: { tag: "div", className: "aprint-system-heading" },
-  body: { tag: "div", className: "aprint-system-details" },
-  col: { tag: "div", className: "aprint-col" },
-  highlight: { tag: "span", className: "aprint-highlight" },
-  small: { tag: "span", className: "aprint-small" },
+  ul: { tag: "ul" },
+  "unordered-list": { tag: "ul" },
+  ol: { tag: "ol" },
+  "ordered-list": { tag: "ol" },
+  li: { tag: "li" },
+  "list-item": { tag: "li" },
+  entry: { tag: "li" },
 };
 
 const ensureNodeData = (node: Record<string, unknown>) => {
@@ -84,10 +80,13 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
         node.type === "leafDirective" ||
         node.type === "textDirective"
       ) {
-        const directive = directives[node.name] ?? {
-          tag: node.type === "textDirective" ? "span" : "div",
-          className: `aprint-${node.name}`,
-        };
+        const userDirective = directives[node.name] ?? {};
+        // set default tag if not specified by user
+        const {
+          tag = node.type === "textDirective" ? "span" : "div",
+          className = `aprint-${node.name}`
+        } = userDirective;
+        const directive = { tag, className } satisfies AprintDirectiveDefinition;
         applyDirective(node, directive);
       }
 
