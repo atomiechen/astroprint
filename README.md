@@ -157,6 +157,21 @@ Then provide matching CSS from your layout or theme stylesheet.
 
 HTML comments in Markdown are stripped by default. Set `stripHtmlComments: false` in the integration options when you need comments to remain in the rendered HTML.
 
+BibTeX code blocks with `style=acm` are converted to publication HTML at build time:
+
+````md
+```bibtex style=acm
+@inproceedings{example,
+  author = {Ada Lovelace and Grace Hopper},
+  title = {Computing Notes},
+  year = {2026},
+  booktitle = {Proceedings of Example Conference}
+}
+```
+````
+
+Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { style: "acm", highlightedAuthors: ["Ada Lovelace"] }` to set global defaults. Local code-block meta wins over global options, so `style=acm highlight="Ada Lovelace"` can configure one BibTeX block.
+
 ## Custom Layouts
 
 The built-in `DocumentLayout.astro` is only the default shell. It lives at `aprint/layouts/DocumentLayout.astro` and includes a small document nav and the paged preview wrapper. The document root and academic CV stylesheet live in `aprint/components/Document.astro`.

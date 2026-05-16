@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 import { basename } from "node:path";
 import remarkDirective from "remark-directive";
 
+import { remarkBibtex, type RemarkBibtexOptions } from "../lib/remark-bibtex.js";
 import { remarkAprintDirectives, type AprintDirectiveOptions } from "../lib/remark-aprint-directives.js";
 import { remarkLogoLinkDirectives } from "../lib/remark-logo-link-directives.js";
 import { remarkStripHtmlComments } from "../lib/remark-strip-html-comments.js";
@@ -25,6 +26,7 @@ export type AprintRouteConfig = {
 export type AprintAstroOptions = AprintDirectiveOptions & {
   routes?: AprintRouteConfig[];
   pdf?: AprintPdfConfig;
+  bibtex?: boolean | RemarkBibtexOptions;
   stripHtmlComments?: boolean;
 };
 
@@ -33,6 +35,7 @@ const normalizeRoute = (route: string) => route.replace(/\/$/, "") || "/";
 export default function aprint(options: AprintAstroOptions = {}): AstroIntegration {
   const routes = options.routes ?? [];
   const pdf = options.pdf;
+  const bibtex = options.bibtex ?? true;
   const stripHtmlComments = options.stripHtmlComments !== false;
 
   return {
@@ -45,6 +48,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
               ...(config.markdown.remarkPlugins ?? []),
               remarkDirective,
               remarkLogoLinkDirectives,
+              ...(bibtex ? [[remarkBibtex, typeof bibtex === "object" ? bibtex : {}]] : []),
               [remarkAprintDirectives, { directives: options.directives } satisfies AprintDirectiveOptions],
               ...(stripHtmlComments ? [remarkStripHtmlComments] : []),
             ],

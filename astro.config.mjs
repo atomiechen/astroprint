@@ -20,6 +20,12 @@ export default defineConfig({
         outputDir: "public",
         backend: "weasyprint",
       },
+      bibtex: {
+        highlightedAuthors: ({ frontmatter }) =>
+          [frontmatter.name, frontmatter.nameZh].filter(
+            (value) => typeof value === "string",
+          ),
+      },
     }),
   ],
 });

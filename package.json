@@ -59,6 +59,8 @@
     "astro:check": "astro check"
   },
   "dependencies": {
+    "@citation-js/core": "^0.7.21",
+    "@citation-js/plugin-bibtex": "^0.7.21",
     "commander": "^12.1.0",
     "pagedjs": "^0.4.3",
     "remark-directive": "^4.0.0",
