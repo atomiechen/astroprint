@@ -6,17 +6,18 @@ export default defineConfig({
   outDir: "site-dist",
   integrations: [
     aprint({
-      documents: {
-        cv: {
+      routes: [
+        {
           collection: "cv",
-          route: "/aprint",
-          previewRoute: "/aprint-preview",
+          route: "/cv",
+          previewRoute: "/cv-preview",
           defaultId: "main",
-          pdf: {
-            output: "CV.pdf",
-            backend: "weasyprint",
-          },
         },
+      ],
+      pdf: {
+        route: "/cv",
+        outputDir: "public",
+        backend: "weasyprint",
       },
     }),
   ],

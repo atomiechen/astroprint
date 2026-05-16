@@ -7,7 +7,6 @@ interface Props {
   secondaryTitle?: string;
   normalHref: string;
   previewHref: string;
-  pdfHref?: string;
   printPreview?: boolean;
 }
 
@@ -16,7 +15,6 @@ const {
   secondaryTitle,
   normalHref,
   previewHref,
-  pdfHref,
   printPreview = false,
 } = Astro.props;
 ---
@@ -40,7 +38,6 @@ const {
         {printPreview && <span class="aprint-preview-status" aria-live="polite">Paginating...</span>}
         {printPreview ? <a href={normalHref}>Normal View</a> : <a href={previewHref}>Paged Preview</a>}
         <button class="aprint-nav-button" type="button" data-print-button>Print</button>
-        {pdfHref && <a href={pdfHref} target="_blank">Download PDF</a>}
       </div>
     </nav>
 

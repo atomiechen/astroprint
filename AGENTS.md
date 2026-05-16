@@ -4,6 +4,10 @@
 
 `aprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
 
+Calling `aprint()` with no options should only install the Markdown directive pipeline. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
+
+When a route config omits `route`, the default route is `/aprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
+
 The package code lives in `src/`. Built-in Astro surfaces live under `src/astro/`:
 
 - `src/astro/layouts/DocumentLayout.astro` is the default document shell.
@@ -20,7 +24,8 @@ The playground content lives under `playground/` and is useful for local validat
 - Type-check package and playground: `npm run check`
 - Build package output: `npm run build`
 - Run the Astro playground dev server: `npm run dev`
-- Generate a PDF through the CLI: `npm run pdf -- cv`
+- Generate a configured PDF through the CLI: `npm run pdf`
+- Generate a manual page-route PDF through the CLI: `npm run pdf -- --route /`
 
 For validating injected document routes in a static build, run:
 

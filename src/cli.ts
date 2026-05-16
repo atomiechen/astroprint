@@ -5,6 +5,20 @@ import { generatePdf, type PdfBackend } from "./pdf.js";
 import { runLocalBin } from "./run.js";
 
 const program = new Command();
+const pdfBackends = new Set<PdfBackend>(["weasyprint", "playwright"]);
+
+const parseBackend = (backend: string | undefined) => {
+  if (!backend) return undefined;
+  if (pdfBackends.has(backend as PdfBackend)) return backend as PdfBackend;
+  throw new Error(`Invalid PDF backend: ${backend}. Expected "weasyprint" or "playwright".`);
+};
+
+const parsePort = (port: string | undefined) => {
+  if (port === undefined) return undefined;
+  const value = Number(port);
+  if (Number.isInteger(value) && value > 0 && value <= 65535) return value;
+  throw new Error(`Invalid port: ${port}. Expected an integer from 1 to 65535.`);
+};
 
 program
   .name("aprint")
@@ -31,21 +45,25 @@ program
 
 program
   .command("pdf")
-  .description("Generate a PDF from an injected aprint Astro route.")
-  .argument("[document]", "Document config key, such as cv", "cv")
-  .argument("[id]", "Document id inside the collection, such as main")
+  .description("Generate a PDF from a configured or explicit Astro route.")
+  .option("-r, --route <route>", "Astro route to print, such as / or /cv-notes/")
   .option("-b, --backend <backend>", "PDF backend: weasyprint or playwright")
-  .option("-o, --output <file>", "Output PDF filename under public/")
-  .option("-p, --port <port>", "Temporary static server port", "4330")
-  .action(async (documentName, id, options) => {
+  .option("-o, --output <file>", "Output PDF path")
+  .option("--output-dir <dir>", "Directory for the generated PDF; filename is derived from the route")
+  .option("-p, --port <port>", "Temporary static server port")
+  .action(async (options) => {
     const outputPath = await generatePdf({
-      documentName,
-      id,
-      backend: options.backend as PdfBackend | undefined,
+      route: options.route,
+      backend: parseBackend(options.backend),
       output: options.output,
-      port: Number(options.port),
+      outputDir: options.outputDir,
+      port: parsePort(options.port),
+      onInfo: (message) => console.error(message),
     });
     console.log(`Generated: ${outputPath}`);
   });
 
-await program.parseAsync();
+await program.parseAsync().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exitCode = 1;
+});

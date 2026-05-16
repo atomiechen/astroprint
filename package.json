@@ -47,7 +47,9 @@
   ],
   "scripts": {
     "clean": "node -e \"fs.rmSync('dist', { force: true, recursive: true })\"",
-    "build": "npm run clean && tsc -p tsconfig.build.json",
+    "prebuild": "npm run clean",
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node scripts/fix-bin-mode.mjs",
     "dev": "astro dev",
     "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
     "pdf": "tsx src/cli.ts pdf",

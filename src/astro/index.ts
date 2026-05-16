@@ -5,40 +5,31 @@ import remarkDirective from "remark-directive";
 
 import { remarkAprintDirectives, type AprintDirectiveOptions } from "../lib/remark-aprint-directives.js";
 
-export type AprintDocumentConfig = {
+export type AprintPdfConfig = {
+  route: string;
+  output?: string;
+  outputDir?: string;
+  backend?: "weasyprint" | "playwright";
+};
+
+export type AprintRouteConfig = {
   collection: string;
   layout?: string;
   route?: string;
   previewRoute?: string;
   defaultId?: string;
-  pdf?: {
-    output?: string;
-    backend?: "weasyprint" | "playwright";
-  };
 };
 
 export type AprintAstroOptions = AprintDirectiveOptions & {
-  documents?: Record<string, AprintDocumentConfig>;
-};
-
-const defaultDocuments: Record<string, AprintDocumentConfig> = {
-  cv: {
-    collection: "cv",
-    layout: "aprint/layouts/DocumentLayout.astro",
-    route: "/aprint",
-    previewRoute: "/aprint-preview",
-    defaultId: "main",
-    pdf: {
-      output: "CV.pdf",
-      backend: "weasyprint",
-    },
-  },
+  routes?: AprintRouteConfig[];
+  pdf?: AprintPdfConfig;
 };
 
 const normalizeRoute = (route: string) => route.replace(/\/$/, "") || "/";
 
 export default function aprint(options: AprintAstroOptions = {}): AstroIntegration {
-  const documents = options.documents ?? defaultDocuments;
+  const routes = options.routes ?? [];
+  const pdf = options.pdf;
 
   return {
     name: "aprint",
@@ -55,25 +46,21 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
         });
 
         const codegenDir = createCodegenDir();
-        const manifest: Record<string, AprintDocumentConfig & { route: string; previewRoute: string }> = {};
 
-        for (const [name, documentConfig] of Object.entries(documents)) {
-          const route = normalizeRoute(documentConfig.route ?? `/${name}`);
-          const previewRoute = normalizeRoute(documentConfig.previewRoute ?? `/${name}-preview`);
-          manifest[name] = {
-            ...documentConfig,
-            route,
-            previewRoute,
-          };
+        for (const [index, routeConfig] of routes.entries()) {
+          const name = `route-${index}`;
+          const route = normalizeRoute(routeConfig.route ?? `/aprint/${routeConfig.collection}`);
+          const defaultPreviewRoute = route === "/" ? "/preview" : `${route}-preview`;
+          const previewRoute = normalizeRoute(routeConfig.previewRoute ?? defaultPreviewRoute);
           const generatedConfig = JSON.stringify({
             name,
-            ...documentConfig,
+            ...routeConfig,
             route,
             previewRoute,
           });
-          const collection = documentConfig.collection;
-          const layout = documentConfig.layout ?? "aprint/layouts/DocumentLayout.astro";
-          const defaultId = documentConfig.defaultId ?? "main";
+          const collection = routeConfig.collection;
+          const layout = routeConfig.layout ?? "aprint/layouts/DocumentLayout.astro";
+          const defaultId = routeConfig.defaultId ?? "main";
           const configFile = new URL(`${name}.json`, codegenDir);
           const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
           const previewEntrypoint = new URL(`${name}-preview.astro`, codegenDir);
@@ -112,7 +99,13 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
           });
         }
 
-        writeFileSync(new URL("manifest.json", codegenDir), JSON.stringify({ documents: manifest }), "utf-8");
+        writeFileSync(
+          new URL("manifest.json", codegenDir),
+          JSON.stringify({
+            pdf,
+          }),
+          "utf-8",
+        );
       },
     },
   };
@@ -161,7 +154,6 @@ const secondaryTitle = entry.data.nameZh;
 const suffix = entry.id === defaultId ? "/" : \`/\${entry.id}/\`;
 const normalHref = \`\${route}\${suffix}\`;
 const previewHref = \`\${previewRoute}\${suffix}\`;
-const pdfHref = \`/\${documentConfig.pdf?.output ?? \`\${entry.id}.pdf\`}\`;
 ---
 
 <DocumentLayout
@@ -169,7 +161,6 @@ const pdfHref = \`/\${documentConfig.pdf?.output ?? \`\${entry.id}.pdf\`}\`;
   secondaryTitle={secondaryTitle}
   normalHref={normalHref}
   previewHref={previewHref}
-  pdfHref={pdfHref}
   printPreview={printPreview}
   entry={entry}
   documentConfig={documentConfig}

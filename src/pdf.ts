@@ -1,17 +1,21 @@
 import { createReadStream, existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { createServer } from "node:http";
-import { extname, join, resolve } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 
-import {
-  getDocumentConfig,
-  getDocumentRoute,
-  loadAprintConfig,
-  type LoadedAprintConfig,
-} from "./config.js";
+import { loadAprintManifest } from "./config.js";
 import { run, runLocalBin } from "./run.js";
 
 export type PdfBackend = "weasyprint" | "playwright";
+export type GeneratePdfOptions = {
+  root?: string;
+  route?: string;
+  backend?: PdfBackend;
+  output?: string;
+  outputDir?: string;
+  port?: number;
+  onInfo?: (message: string) => void;
+};
 
 const mimeTypes = new Map([
   [".html", "text/html; charset=utf-8"],
@@ -25,9 +29,9 @@ const mimeTypes = new Map([
   [".woff2", "font/woff2"],
 ]);
 
-const serveDist = (distDir: string, port: number) => {
-  const origin = `http://127.0.0.1:${port}`;
+const serveDist = (distDir: string, port?: number) => {
   const server = createServer((request, response) => {
+    const origin = getServerOrigin(server);
     const url = new URL(request.url ?? "/", origin);
     const pathname = decodeURIComponent(url.pathname);
     const candidates = pathname.endsWith("/")
@@ -50,33 +54,88 @@ const serveDist = (distDir: string, port: number) => {
   return new Promise<{ server: ReturnType<typeof createServer>; origin: string }>(
     (resolveServer, reject) => {
       server.once("error", reject);
-      server.listen(port, "127.0.0.1", () => resolveServer({ server, origin }));
+      server.listen(port ?? 0, "127.0.0.1", () => resolveServer({ server, origin: getServerOrigin(server) }));
     },
   );
 };
 
+const getServerOrigin = (server: ReturnType<typeof createServer>) => {
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    return "http://127.0.0.1";
+  }
+  return `http://127.0.0.1:${address.port}`;
+};
+
+const normalizePdfRoute = (route: string) => {
+  const [pathname] = route.split(/[?#]/, 1);
+  const withLeadingSlash = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  if (withLeadingSlash === "/index" || withLeadingSlash === "/") return "/";
+  return extname(withLeadingSlash) ? withLeadingSlash : `${withLeadingSlash.replace(/\/$/, "")}/`;
+};
+
+const getRouteHtmlCandidates = (distDir: string, route: string) => {
+  const normalizedRoute = normalizePdfRoute(route);
+  const withoutTrailingSlash = normalizedRoute.replace(/\/$/, "");
+
+  if (normalizedRoute === "/") {
+    return [join(distDir, "index.html")];
+  }
+
+  return normalizedRoute.endsWith("/")
+    ? [
+        join(distDir, normalizedRoute, "index.html"),
+        join(distDir, `${withoutTrailingSlash}.html`),
+      ]
+    : [
+        join(distDir, normalizedRoute),
+        join(distDir, `${normalizedRoute}.html`),
+        join(distDir, normalizedRoute, "index.html"),
+      ];
+};
+
+const getRouteOutputName = (route: string) => {
+  const normalizedRoute = normalizePdfRoute(route);
+  if (normalizedRoute === "/") return "index.pdf";
+
+  const routeName = basename(normalizedRoute.replace(/\/$/, ""));
+  return `${routeName || "index"}.pdf`;
+};
+
+const resolvePathFromRoot = (root: string, path: string) =>
+  isAbsolute(path) ? path : resolve(root, path);
+
+const resolveOutputPath = ({
+  root,
+  route,
+  cliOutput,
+  cliOutputDir,
+  configOutput,
+  configOutputDir,
+}: {
+  root: string;
+  route: string;
+  cliOutput?: string;
+  cliOutputDir?: string;
+  configOutput?: string;
+  configOutputDir?: string;
+}) => {
+  const outputName = getRouteOutputName(route);
+  const outputDir = cliOutputDir ?? configOutputDir ?? ".";
+  const output = cliOutput ?? configOutput ?? outputName;
+  return resolve(resolvePathFromRoot(root, outputDir), output);
+};
+
 export const generatePdf = async ({
   root = process.cwd(),
-  documentName,
-  id,
+  route: routeOption,
   backend,
   output,
-  port = 4330,
-}: {
-  root?: string;
-  documentName?: string;
-  id?: string;
-  backend?: PdfBackend;
-  output?: string;
-  port?: number;
-} = {}) => {
-  const config: LoadedAprintConfig = await loadAprintConfig(root);
-  const { document } = getDocumentConfig(config, documentName);
+  outputDir,
+  port,
+  onInfo,
+}: GeneratePdfOptions = {}) => {
   const distDir = resolve(root, ".aprint");
-  const route = getDocumentRoute(document, id);
-  const selectedBackend = backend ?? document.pdf?.backend ?? "weasyprint";
-  const outputName = output ?? document.pdf?.output ?? `${id ?? document.defaultId ?? "main"}.pdf`;
-  const outputPath = resolve(root, "public", outputName);
   let server: ReturnType<typeof createServer> | undefined;
 
   try {
@@ -87,15 +146,44 @@ export const generatePdf = async ({
       },
     });
 
-    const htmlPath = join(distDir, route, "index.html");
-    if (!existsSync(htmlPath)) {
-      throw new Error(`Generated document route not found: ${route}`);
+    const config = await loadAprintManifest(root);
+    const pdfConfig = config.pdf;
+    const routeSource = routeOption ?? pdfConfig?.route;
+    if (!routeSource) {
+      throw new Error(
+        [
+          "No PDF route was provided.",
+          "Use `aprint pdf --route /your-page/`, or configure `pdf: { route: \"/your-page/\" }` in the aprint integration.",
+        ].join("\n"),
+      );
+    }
+    const route = normalizePdfRoute(routeSource);
+    const selectedBackend = backend ?? pdfConfig?.backend ?? "weasyprint";
+    const outputPath = resolveOutputPath({
+      root,
+      route,
+      cliOutput: output,
+      cliOutputDir: outputDir,
+      configOutput: pdfConfig?.output,
+      configOutputDir: pdfConfig?.outputDir,
+    });
+
+    const htmlPath = getRouteHtmlCandidates(distDir, route).find((candidate) => existsSync(candidate));
+    if (!htmlPath) {
+      throw new Error(
+        [
+          `Generated route not found: ${route}`,
+          "Make sure the route is an Astro page that builds successfully.",
+        ].join("\n"),
+      );
     }
 
-    await mkdir(join(root, "public"), { recursive: true });
+    await mkdir(dirname(outputPath), { recursive: true });
     const served = await serveDist(distDir, port);
     server = served.server;
     const url = `${served.origin}${route}`;
+    onInfo?.(`PDF source URL: ${url}`);
+    onInfo?.(`PDF output path: ${outputPath}`);
 
     if (selectedBackend === "weasyprint") {
       const bin = process.env.WEASYPRINT_BIN ?? "weasyprint";
@@ -130,9 +218,9 @@ export const generatePdf = async ({
         await browser.close();
       }
     }
+
+    return outputPath;
   } finally {
     await new Promise<void>((resolveClose) => server?.close(() => resolveClose()) ?? resolveClose());
   }
-
-  return outputPath;
 };

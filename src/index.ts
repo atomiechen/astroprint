@@ -1,11 +1,4 @@
 export { default } from "./astro/index.js";
-export {
-  defaultDocuments,
-  getDocumentConfig,
-  getDocumentRoute,
-  loadAprintConfig,
-  type LoadedAprintConfig,
-} from "./config.js";
 export { generatePdf } from "./pdf.js";
 export { defaultDirectives, remarkAprintDirectives } from "./lib/remark-aprint-directives.js";
 export type {
@@ -14,8 +7,10 @@ export type {
 } from "./lib/remark-aprint-directives.js";
 export type {
   AprintAstroOptions,
-  AprintDocumentConfig,
+  AprintPdfConfig,
+  AprintRouteConfig,
 } from "./astro/index.js";
 export type {
+  GeneratePdfOptions,
   PdfBackend,
 } from "./pdf.js";
