@@ -1,8 +1,11 @@
 import { Cite } from "@citation-js/core";
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
+const { plugins } = require("@citation-js/core") as { plugins: any };
 require("@citation-js/plugin-bibtex");
+require("@citation-js/plugin-csl");
 
 type CslName = {
   given?: string;
@@ -41,11 +44,31 @@ export type FormattedPublication = {
   html: string;
 };
 
-export type PublicationStyle = "acm";
+export type PublicationStyle = "acm" | "apa" | "ieee";
 
 export type FormatPublicationsOptions = {
   highlightedAuthors?: string[];
-  style?: PublicationStyle;
+  lang?: string;
+  style?: PublicationStyle | Uppercase<PublicationStyle>;
+};
+
+const cslTemplates = {
+  apa: "aprint-apa",
+  ieee: "aprint-ieee",
+} satisfies Record<Exclude<PublicationStyle, "acm">, string>;
+
+let cslStylesRegistered = false;
+
+const registerCslStyles = () => {
+  if (cslStylesRegistered) return;
+
+  const config = plugins.config.get("@csl");
+  const apaStyle = readFileSync(new URL("../../src/lib/csl/apa.csl", import.meta.url), "utf8");
+  const ieeeStyle = readFileSync(new URL("../../src/lib/csl/ieee.csl", import.meta.url), "utf8");
+  config.templates.add(cslTemplates.apa, apaStyle);
+  config.templates.add(cslTemplates.ieee, ieeeStyle);
+
+  cslStylesRegistered = true;
 };
 
 const escapeHtml = (value: string) =>
@@ -66,6 +89,59 @@ const formatUrlLink = (url: string) => {
   const escapedUrl = escapeHtml(url);
   return `<a href="${escapedUrl}" target="_blank" rel="noopener noreferrer">${escapedUrl}</a>`;
 };
+
+const normalizeNameToken = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replaceAll(/[^\p{Letter}\p{Number}]+/gu, "");
+
+const initials = (value: string | undefined) =>
+  value
+    ?.split(/[\s-]+/)
+    .filter(Boolean)
+    .map((part) => `${part.at(0)?.toUpperCase()}.`)
+    .join(" ");
+
+const highlightedAuthorAliases = (entry: CitationEntry | undefined, highlightedAuthors: string[] = []) => {
+  const aliases = new Set<string>();
+
+  for (const highlightedAuthor of highlightedAuthors.filter(Boolean)) {
+    aliases.add(escapeHtml(highlightedAuthor));
+    const highlightedName = normalizeNameToken(highlightedAuthor);
+
+    for (const author of entry?.author ?? []) {
+      if (author.literal) {
+        if (normalizeNameToken(author.literal) === highlightedName) {
+          aliases.add(escapeHtml(author.literal));
+        }
+        continue;
+      }
+
+      const fullName = [author.given, author.family].filter(Boolean).join(" ");
+      if (!author.family || normalizeNameToken(fullName) !== highlightedName) continue;
+
+      const authorInitials = initials(author.given);
+      aliases.add(escapeHtml(fullName));
+      if (authorInitials) {
+        aliases.add(escapeHtml(`${authorInitials} ${author.family}`));
+        aliases.add(escapeHtml(`${author.family}, ${authorInitials}`));
+      }
+    }
+  }
+
+  return [...aliases].sort((a, b) => b.length - a.length);
+};
+
+const highlightCslHtml = (
+  html: string,
+  entry: CitationEntry | undefined,
+  highlightedAuthors: string[] = [],
+) =>
+  highlightedAuthorAliases(entry, highlightedAuthors).reduce(
+    (result, alias) => result.replaceAll(alias, `<strong>${alias}</strong>`),
+    html,
+  );
 
 const formatAuthors = (authors: CslName[] = [], highlightedAuthors: string[] = []) => {
   const names = authors.map((author) =>
@@ -143,6 +219,58 @@ const formatAcmPublication = (
   };
 };
 
+const stripCslEntryWrapper = (html: string) =>
+  html
+    .trim()
+    .replace(/^<div\b[^>]*class="[^"]*\bcsl-entry\b[^"]*"[^>]*>/, "")
+    .replace(/<\/div>$/, "");
+
+const normalizeCslEntryHtml = (html: string, options: { stripCitationNumber?: boolean } = {}) => {
+  let entryHtml = stripCslEntryWrapper(html).trim();
+
+  if (options.stripCitationNumber) {
+    entryHtml = entryHtml
+      .replace(/^\s*<div\b[^>]*class="[^"]*\bcsl-left-margin\b[^"]*"[^>]*>[\s\S]*?<\/div>\s*/, "")
+      .replace(/^\s*<span\b[^>]*class="[^"]*\bcsl-left-margin\b[^"]*"[^>]*>[\s\S]*?<\/span>\s*/, "")
+      .replace(/^\s*<div\b[^>]*class="[^"]*\bcsl-right-inline\b[^"]*"[^>]*>([\s\S]*)<\/div>\s*$/, "$1")
+      .replace(/^\s*<span\b[^>]*class="[^"]*\bcsl-right-inline\b[^"]*"[^>]*>([\s\S]*)<\/span>\s*$/, "$1");
+  }
+
+  return entryHtml
+    .trim()
+    .replaceAll(/\s*<div\b([^>]*class="[^"]*\bcsl-(?:left-margin|right-inline)\b[^"]*"[^>]*)>/g, "<span$1>")
+    .replaceAll(/<\/div>\s*/g, "</span> ")
+    .trim();
+};
+
+const formatCslPublications = (
+  bibtex: string,
+  style: Exclude<PublicationStyle, "acm">,
+  options: FormatPublicationsOptions,
+): FormattedPublication[] => {
+  registerCslStyles();
+
+  const template = cslTemplates[style];
+  const cite = new Cite(bibtex);
+  const entriesById = new Map(
+    (cite.data as CitationEntry[]).map((entry) => [entry.id ?? entry["citation-key"] ?? "", entry]),
+  );
+  const entries = cite.format("bibliography", {
+    asEntryArray: true,
+    format: "html",
+    lang: options.lang ?? "en-US",
+    template,
+  }) as unknown as [string, string][];
+
+  return entries.map(([id, html]) => ({
+    html: highlightCslHtml(
+      normalizeCslEntryHtml(html, { stripCitationNumber: style === "ieee" }),
+      entriesById.get(id),
+      options.highlightedAuthors,
+    ),
+  }));
+};
+
 const attachRawBibtexFields = (entries: CitationEntry[], bibtex: string) => {
   const rawEntries = new Cite(bibtex, {
     target: "@biblatex/entries+list",
@@ -162,11 +290,15 @@ export const formatBibtexPublications = (
   bibtex: string,
   options: FormatPublicationsOptions = {},
 ): FormattedPublication[] => {
-  const style = options.style ?? "acm";
-  const entries = attachRawBibtexFields(new Cite(bibtex).data as CitationEntry[], bibtex);
+  const style = (options.style ?? "acm").toLowerCase() as PublicationStyle;
 
   if (style === "acm") {
+    const entries = attachRawBibtexFields(new Cite(bibtex).data as CitationEntry[], bibtex);
     return entries.map((entry) => formatAcmPublication(entry, options));
+  }
+
+  if (style === "apa" || style === "ieee") {
+    return formatCslPublications(bibtex, style, options);
   }
 
   throw new Error(`Unsupported publication style: ${style}`);

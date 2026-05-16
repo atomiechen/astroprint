@@ -14,6 +14,9 @@ importers:
       '@citation-js/plugin-bibtex':
         specifier: ^0.7.21
         version: 0.7.21(@citation-js/core@0.7.21)
+      '@citation-js/plugin-csl':
+        specifier: ^0.7.21
+        version: 0.7.22(@citation-js/core@0.7.21)
       commander:
         specifier: ^12.1.0
         version: 12.1.0
@@ -129,6 +132,12 @@ packages:
 
   '@citation-js/plugin-bibtex@0.7.21':
     resolution: {integrity: sha512-O008pSsJgiYKn4+7gAWrbNpNdUH++aMeYmZaJ2oFQ8X1tcY5jNBxJcr0zZojNtUi5CVOaXXHQ0yIifoUhuF2Vg==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@citation-js/core': ^0.7.0
+
+  '@citation-js/plugin-csl@0.7.22':
+    resolution: {integrity: sha512-/rGdtbeP3nS4uZDdEbQUHT8PrUcIs0da2t+sWMKYXoOhXQqfw3oJJ7p4tUD+R8lptyIR5Eq20/DFk/kQDdLpYg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@citation-js/core': ^0.7.0
@@ -1093,6 +1102,9 @@ packages:
   ci-info@4.4.0:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
+
+  citeproc@2.4.63:
+    resolution: {integrity: sha512-68F95Bp4UbgZU/DBUGQn0qV3HDZLCdI9+Bb2ByrTaNJDL5VEm9LqaiNaxljsvoaExSLEXe1/r6n2Z06SCzW3/Q==}
 
   clear-cut@2.0.2:
     resolution: {integrity: sha512-WVgn/gSejQ+0aoR8ucbKIdo6icduPZW6AbWwyUmAUgxy63rUYjwa5rj/HeoNPhf0/XPrl82X8bO/hwBkSmsFtg==}
@@ -2441,6 +2453,12 @@ snapshots:
       '@citation-js/name': 0.4.2
       moo: 0.5.3
 
+  '@citation-js/plugin-csl@0.7.22(@citation-js/core@0.7.21)':
+    dependencies:
+      '@citation-js/core': 0.7.21
+      '@citation-js/date': 0.5.1
+      citeproc: 2.4.63
+
   '@emmetio/abbreviation@2.3.3':
     dependencies:
       '@emmetio/scanner': 1.0.4
@@ -3191,6 +3209,8 @@ snapshots:
       readdirp: 5.0.0
 
   ci-info@4.4.0: {}
+
+  citeproc@2.4.63: {}
 
   clear-cut@2.0.2: {}
 

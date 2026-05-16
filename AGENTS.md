@@ -41,7 +41,7 @@ Do not require a temporary `directives` entry in `astro.config.mjs` for the buil
 
 The `:logolink[...]` directive is handled by `src/lib/remark-logo-link-directives.ts` before the generic directive mapper. Keep specialized transforms like this separate from the generic mapper when they need to rewrite the Markdown AST.
 
-BibTeX code blocks are handled by `src/lib/remark-bibtex.ts` before the generic directive mapper. A fenced code block with `bibtex` as the language and `style=acm` in the meta string is converted into ACM-style publication HTML using `src/lib/bib.ts` and Citation.js. Local code-block meta wins over global `bibtex` options. The integration enables this by default; callers can set `bibtex: false` or pass `bibtex` options.
+BibTeX code blocks are handled by `src/lib/remark-bibtex.ts` before the generic directive mapper. A fenced code block with `bibtex` as the language and `style=acm`, `style=apa`, or `style=ieee` in the meta string is converted into publication HTML using `src/lib/bib.ts` and Citation.js. `acm` uses the built-in ACM DL-like formatter; `apa` and `ieee` use bundled CSL styles under `src/lib/csl/`. Style names are case-insensitive. Local code-block meta wins over global `bibtex` options. The integration enables this by default; callers can set `bibtex: false` or pass `bibtex` options.
 
 HTML comment removal is handled separately by `src/lib/remark-strip-html-comments.ts`. The integration keeps it on by default for current behavior, and callers can set `stripHtmlComments: false` when they need Markdown HTML comments to survive.
 

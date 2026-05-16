@@ -157,7 +157,7 @@ Then provide matching CSS from your layout or theme stylesheet.
 
 HTML comments in Markdown are stripped by default. Set `stripHtmlComments: false` in the integration options when you need comments to remain in the rendered HTML.
 
-BibTeX code blocks with `style=acm` are converted to publication HTML at build time:
+BibTeX code blocks with `style=acm`, `style=apa`, or `style=ieee` are converted to publication HTML at build time:
 
 ````md
 ```bibtex style=acm
@@ -170,7 +170,7 @@ BibTeX code blocks with `style=acm` are converted to publication HTML at build t
 ```
 ````
 
-Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { style: "acm", highlightedAuthors: ["Ada Lovelace"] }` to set global defaults. Local code-block meta wins over global options, so `style=acm highlight="Ada Lovelace"` can configure one BibTeX block.
+Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { style: "apa", highlightedAuthors: ["Ada Lovelace"] }` to set global defaults. Local code-block meta wins over global options, so `style=ieee highlight="Ada Lovelace"` can configure one BibTeX block. Style names are case-insensitive. `acm` uses a built-in ACM DL-like formatter; `apa` and `ieee` use bundled CSL styles from the Citation Style Language styles repository. Pass `lang` globally or in code-block meta, for example `style=apa lang=en-US`, when a CSL-backed style should use a specific locale.
 
 ## Custom Layouts
 

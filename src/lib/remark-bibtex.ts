@@ -48,14 +48,16 @@ export const remarkBibtex = (options: RemarkBibtexOptions = {}) => (tree: unknow
     if (node.lang !== "bibtex") return;
 
     const meta = typeof node.meta === "string" ? node.meta : undefined;
-    const style = valueFromMeta(meta, "style") ?? options.style;
+    const style = (valueFromMeta(meta, "style") ?? options.style)?.toLowerCase();
     if (!style) return;
+    const lang = valueFromMeta(meta, "lang") ?? options.lang;
     const context = { frontmatter, meta, node } satisfies BibtexContext;
     const highlightedAuthors = authorsFromMeta(meta) ?? resolveHighlightedAuthors(options.highlightedAuthors, context);
 
     const formatted = formatBibtexPublication(String(node.value ?? ""), {
       ...options,
       highlightedAuthors,
+      lang,
       style: style as FormatPublicationsOptions["style"],
     });
 
