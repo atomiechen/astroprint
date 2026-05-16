@@ -2,7 +2,7 @@ import { visit } from "unist-util-visit";
 
 export type AprintDirectiveDefinition = {
   tag?: string;
-  className?: string;
+  className?: string | string[];
 };
 
 export type AprintDirectiveOptions = {
@@ -13,7 +13,7 @@ const defaultDirectives: Record<string, AprintDirectiveDefinition> = {
   "cv-meta": { tag: "div", className: "aprint-meta" },
   "two-column-list": { tag: "ul", className: "aprint-list aprint-list--two-column" },
   "system-list": { tag: "ul", className: "aprint-list" },
-  publications: { tag: "ul", className: "aprint-list aprint-publications" },
+  publications: { tag: "ul", className: "aprint-publications" },
   entry: { tag: "li", className: "aprint-entry" },
   system: { tag: "li", className: "aprint-entry" },
   heading: { tag: "div", className: "aprint-system-heading" },
@@ -35,15 +35,40 @@ const ensureNodeData = (node: Record<string, unknown>) => {
   return data;
 };
 
-const applyDirective = (node: Record<string, unknown>, directive: AprintDirectiveDefinition) => {
+const toClassList = (className: string | string[] | unknown) => {
+  if (Array.isArray(className)) {
+    return className
+      .flatMap((value) => (typeof value === "string" ? value.split(/\s+/) : []))
+      .filter(Boolean);
+  }
+
+  if (typeof className === "string") {
+    return className.split(/\s+/).filter(Boolean);
+  }
+
+  return [];
+};
+
+const addClassNames = (node: Record<string, unknown>, className: string | string[]) => {
   const data = ensureNodeData(node);
   const properties = (data.hProperties as Record<string, unknown> | undefined) ?? {};
+  const existing = toClassList(properties.className);
+  const added = toClassList(className);
 
-  data.hName = directive.tag;
-  if (directive.className) {
-    properties.className = directive.className.split(/\s+/).filter(Boolean);
-  }
+  properties.className = [...new Set([...existing, ...added])];
   data.hProperties = properties;
+};
+
+const applyDirective = (node: Record<string, unknown>, directive: AprintDirectiveDefinition) => {
+  const data = ensureNodeData(node);
+
+  if (directive.tag) {
+    data.hName = directive.tag;
+  }
+
+  if (directive.className) {
+    addClassNames(node, directive.className);
+  }
 };
 
 export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => {
@@ -64,18 +89,6 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
           className: `aprint-${node.name}`,
         };
         applyDirective(node, directive);
-
-        if (node.name === "entry" && parent?.type === "containerDirective") {
-          const data = ensureNodeData(node);
-          const properties = (data.hProperties as Record<string, unknown> | undefined) ?? {};
-          const existing = Array.isArray(properties.className) ? properties.className : [];
-          if (parent.name === "two-column-list") {
-            properties.className = [...existing, "aprint-entry--two-column"];
-          } else if (parent.name === "publications") {
-            properties.className = [...existing, "aprint-entry--publication"];
-          }
-          data.hProperties = properties;
-        }
       }
 
       if (node.type === "html" && typeof node.value === "string") {

@@ -1,5 +1,5 @@
 import { defineConfig } from "astro/config";
-import aprint from "./dist/index.js";
+import aprint from "./src";
 
 export default defineConfig({
   srcDir: "playground",
