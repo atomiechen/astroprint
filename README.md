@@ -155,6 +155,8 @@ export default defineConfig({
 
 Then provide matching CSS from your layout or theme stylesheet.
 
+HTML comments in Markdown are stripped by default. Set `stripHtmlComments: false` in the integration options when you need comments to remain in the rendered HTML.
+
 ## Custom Layouts
 
 The built-in `DocumentLayout.astro` is only the default shell. It lives at `aprint/layouts/DocumentLayout.astro` and includes a small document nav and the paged preview wrapper. The document root and academic CV stylesheet live in `aprint/components/Document.astro`.

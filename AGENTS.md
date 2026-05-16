@@ -38,6 +38,8 @@ Do not require a temporary `directives` entry in `astro.config.mjs` for the buil
 
 The `:logolink[...]` directive is handled by `src/lib/remark-logo-link-directives.ts` before the generic directive mapper. Keep specialized transforms like this separate from the generic mapper when they need to rewrite the Markdown AST.
 
+HTML comment removal is handled separately by `src/lib/remark-strip-html-comments.ts`. The integration keeps it on by default for current behavior, and callers can set `stripHtmlComments: false` when they need Markdown HTML comments to survive.
+
 ## Commands
 
 - Install dependencies: `npm install`

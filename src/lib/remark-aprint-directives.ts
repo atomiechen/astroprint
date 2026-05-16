@@ -104,7 +104,7 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
   };
 
   return (tree: unknown) => {
-    visit(tree as any, (node: any, index, parent) => {
+    visit(tree as any, (node: any) => {
       if (
         node.type === "containerDirective" ||
         node.type === "leafDirective" ||
@@ -119,15 +119,6 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
         const directive = { tag, className } satisfies AprintDirectiveDefinition;
         applyAttributes(node);
         applyDirective(node, directive);
-      }
-
-      // Remove HTML comments
-      if (node.type === "html" && typeof node.value === "string") {
-        const value = node.value.trim();
-        if (value.startsWith("<!--") && value.endsWith("-->") && parent?.children) {
-          parent.children.splice(index, 1);
-          return index; // continue at the same index
-        }
       }
     });
   };
