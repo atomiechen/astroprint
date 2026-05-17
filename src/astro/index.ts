@@ -11,6 +11,7 @@ import { remarkStripHtmlComments } from "../lib/remark-strip-html-comments.js";
 
 export type AprintPdfConfig = {
   route: string;
+  document?: string;
   output?: string;
   outputDir?: string;
   backend?: "weasyprint" | "playwright";

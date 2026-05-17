@@ -10,6 +10,7 @@ export type PdfBackend = "weasyprint" | "playwright";
 export type GeneratePdfOptions = {
   root?: string;
   route?: string;
+  document?: string;
   backend?: PdfBackend;
   output?: string;
   outputDir?: string;
@@ -74,6 +75,17 @@ const normalizePdfRoute = (route: string) => {
   return extname(withLeadingSlash) ? withLeadingSlash : `${withLeadingSlash.replace(/\/$/, "")}/`;
 };
 
+const joinPdfRoute = (route: string, document: string | undefined) => {
+  const [routePath] = route.split(/[?#]/, 1);
+  if (!document) return routePath;
+
+  const [documentPath] = document.split(/[?#]/, 1);
+  const normalizedDocument = documentPath.replace(/^\/+|\/+$/g, "");
+  if (!normalizedDocument) return routePath;
+
+  return `${routePath.replace(/\/+$/, "")}/${normalizedDocument}`;
+};
+
 const getRouteHtmlCandidates = (distDir: string, route: string) => {
   const normalizedRoute = normalizePdfRoute(route);
   const withoutTrailingSlash = normalizedRoute.replace(/\/$/, "");
@@ -129,6 +141,7 @@ const resolveOutputPath = ({
 export const generatePdf = async ({
   root = process.cwd(),
   route: routeOption,
+  document: documentOption,
   backend,
   output,
   outputDir,
@@ -149,6 +162,7 @@ export const generatePdf = async ({
     const config = await loadAprintManifest(root);
     const pdfConfig = config.pdf;
     const routeSource = routeOption ?? pdfConfig?.route;
+    const documentSource = documentOption ?? pdfConfig?.document;
     if (!routeSource) {
       throw new Error(
         [
@@ -157,7 +171,7 @@ export const generatePdf = async ({
         ].join("\n"),
       );
     }
-    const route = normalizePdfRoute(routeSource);
+    const route = normalizePdfRoute(joinPdfRoute(routeSource, documentSource));
     const selectedBackend = backend ?? pdfConfig?.backend ?? "weasyprint";
     const outputPath = resolveOutputPath({
       root,

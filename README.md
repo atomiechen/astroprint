@@ -300,13 +300,15 @@ secondaryTitle: Draft
 aprint dev          # thin wrapper around astro dev
 aprint build        # thin wrapper around astro build
 aprint pdf          # Generate from the configured pdf.route
+aprint pdf mydoc    # Generate from pdf.route plus /mydoc/
+aprint pdf a/b/c    # Generate from pdf.route plus /a/b/c/
 aprint pdf --route /cv-notes/  # Generate from a regular Astro route
 aprint pdf --route /cv-notes/ --output-dir public
 ```
 
 The PDF command sets `APRINT_RENDER_HTML=true` so injected routes are generated for export. Without top-level `pdf`, use `--route` to print an existing Astro page; `aprint` will not guess a default PDF route.
 
-If a route config omits `route`, it is injected at `/aprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `aprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL.
+If a route config omits `route`, it is injected at `/aprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `aprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `aprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `aprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.
 
 `pdf.output`, `pdf.outputDir`, `--output`, and `--output-dir` are normal filesystem paths, not Astro routes. `outputDir` is the base directory, and `output` is resolved inside it. Absolute `output` paths are used as-is. Relative paths are resolved from the project root/current working directory. For example, `outputDir: "public"` plus `/cv-notes` writes `public/cv-notes.pdf`; `outputDir: "public"` plus `output: "CV.pdf"` writes `public/CV.pdf`.
 

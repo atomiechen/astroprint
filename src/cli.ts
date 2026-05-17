@@ -46,14 +46,16 @@ program
 program
   .command("pdf")
   .description("Generate a PDF from a configured or explicit Astro route.")
+  .argument("[document]", "Document path appended to the configured or explicit route")
   .option("-r, --route <route>", "Astro route to print, such as / or /cv-notes/")
   .option("-b, --backend <backend>", "PDF backend: weasyprint or playwright")
   .option("-o, --output <file>", "Output PDF path")
   .option("--output-dir <dir>", "Directory for the generated PDF; filename is derived from the route")
   .option("-p, --port <port>", "Temporary static server port")
-  .action(async (options) => {
+  .action(async (document: string | undefined, options) => {
     const outputPath = await generatePdf({
       route: options.route,
+      document,
       backend: parseBackend(options.backend),
       output: options.output,
       outputDir: options.outputDir,
