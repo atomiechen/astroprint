@@ -1,12 +1,29 @@
 {
   "name": "aprint",
   "version": "0.1.0",
-  "description": "Markdown-first document authoring with live paged preview and PDF export.",
+  "description": "Astro integration for academic, print-ready, Markdown-first documents with paged preview and PDF export.",
+  "homepage": "https://github.com/atomiechen/aprint#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atomiechen/aprint.git"
+  },
   "keywords": [
+    "withastro",
     "astro-integration",
-    "astro",
+    "css",
+    "tooling",
+    "markdown",
+    "print",
     "pdf",
-    "paged-media"
+    "paged-media",
+    "pagedjs",
+    "academic",
+    "cv",
+    "resume",
+    "bibliography",
+    "bibtex",
+    "citation",
+    "csl"
   ],
   "type": "module",
   "main": "./dist/index.js",
