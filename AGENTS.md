@@ -18,6 +18,7 @@ The package code lives in `src/`. Built-in Astro surfaces live under `src/astro/
 - `src/astro/components/PrintPreview.astro` is the document-agnostic Paged.js preview wrapper.
 - `src/astro/styles/base.css` defines the required baseline page, typography, and preview CSS variables plus neutral document root styles.
 - `src/astro/styles/academic-cv.css` is the built-in academic CV document theme.
+- `src/astro/vendor/pagedjs-0.4.3.esm.min.js` is the vendored minified Paged.js ESM bundle used by `PrintPreview.astro`.
 
 The playground content lives under `playground/` and is useful for local validation.
 
@@ -51,6 +52,7 @@ HTML comment removal is handled separately by `src/lib/remark-strip-html-comment
 - Type-check package and playground: `npm run check`
 - Build package output: `npm run build`
 - Run the Astro playground dev server: `npm run dev`
+- Refresh the vendored Paged.js bundle: `npm run vendor:pagedjs`
 - Generate a configured PDF through the CLI: `npm run pdf`
 - Generate a manual page-route PDF through the CLI: `npm run pdf -- --route /`
 
@@ -62,11 +64,15 @@ APRINT_RENDER_HTML=true npx astro build --outDir .aprint-check
 
 Remove generated validation output afterward. Do not edit `.astro/`, `.aprint/`, `.aprint-check/`, `dist/`, `site-dist/`, or `public/` as source files.
 
+`npm run vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/astro/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle used by `PrintPreview.astro`.
+
 ## Print Preview
 
 `PrintPreview.astro` is preview-only. Callers should render it only when they want Paged.js preview mode and render their document directly otherwise.
 
 It wraps slotted document content, feeds selected page styles to Paged.js, and requires an explicit `documentSelector` prop. Callers may also pass `styleSelector`, `statusSelector`, and `readyEvent`. `styleSelector` defaults to `style` and should be narrowed when callers need to exclude preview chrome styles.
+
+`PrintPreview.astro` imports the vendored Paged.js ESM bundle from `src/astro/vendor/`, not the `pagedjs` package entrypoint. This keeps the component usable without requiring consuming projects to install `pagedjs` or configure Vite `optimizeDeps`.
 
 The component script initializes all `.print-preview-source` instances because Astro may emit the component script once per page even when the component appears multiple times.
 
@@ -98,7 +104,7 @@ Keep document styles and preview chrome styles separate:
 
 - `base.css` should define baseline variables and neutral document root behavior that every theme can inherit or override.
 - `academic-cv.css` should override baseline variables and style document content for the built-in academic theme.
-- `Document.astro` should own only theme-neutral document root and title markup and may import `base.css`; do not import theme CSS from it.
+- `Document.astro` should own only theme-neutral document root and title markup and may import `base.css`; do not import theme CSS from it. Aprint-owned root elements should use the `aprint-scope` class so `base.css` can apply scoped reset styles without touching host-page chrome.
 - `DocumentLayout.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, and caller-owned preview chrome styles. Theme wrappers should import their own CSS and render this layout; they should not re-import `base.css` because `Document.astro` already does that.
 - `AcademicDocumentLayout.astro` should remain a thin academic theme wrapper around `DocumentLayout.astro`.
 - `DocumentMarkdownLayout.astro` should stay a lightweight theme-neutral Markdown-page path: it wraps content in `Document.astro` and does not add generated routes, navigation, preview, PDF behavior, or theme CSS.

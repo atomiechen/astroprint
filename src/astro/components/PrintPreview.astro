@@ -15,24 +15,14 @@ const {
 ---
 
 <script>
+  // @ts-ignore -- the vendored Paged.js bundle does not publish declarations.
+  import { Previewer } from "../vendor/pagedjs-0.4.3.esm.min.js";
+
   // Astro emits this component script once per page, so one script must initialize
   // every PrintPreview instance on the page.
   const previewSources = document.querySelectorAll<HTMLElement>(".print-preview-source");
 
   if (previewSources.length > 0) {
-    type PagedJsModule = {
-      Previewer: new () => {
-        preview(
-          content?: Node,
-          stylesheets?: Array<string | Record<string, string>>,
-          renderTo?: Element,
-        ): Promise<{ pages: unknown[] }>;
-      };
-    };
-
-    // @ts-ignore -- pagedjs does not publish declarations; keep this local to the component.
-    const { Previewer } = (await import("pagedjs")) as PagedJsModule;
-
     for (const previewSource of previewSources) {
       const documentSelector = previewSource.getAttribute("data-document-selector");
       const styleSelector = previewSource.getAttribute("data-style-selector") || "style";

@@ -59,6 +59,7 @@
     "src/astro/components",
     "src/astro/layouts",
     "src/astro/styles",
+    "src/astro/vendor/pagedjs-0.4.3.esm.min.js",
     "src/lib/csl",
     "README.md"
   ],
@@ -70,6 +71,9 @@
     "dev": "astro dev",
     "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
     "pdf": "tsx src/cli.ts pdf",
+    "vendor:pagedjs": "npm run vendor:pagedjs:fetch && npm run vendor:pagedjs:minify",
+    "vendor:pagedjs:fetch": "curl -L https://unpkg.com/pagedjs@0.4.3/dist/paged.esm.js -o src/astro/vendor/pagedjs-0.4.3.esm.js",
+    "vendor:pagedjs:minify": "esbuild src/astro/vendor/pagedjs-0.4.3.esm.js --minify --format=esm --outfile=src/astro/vendor/pagedjs-0.4.3.esm.min.js",
     "prepack": "npm run build",
     "astro:build": "astro check && astro build",
     "astro:preview": "astro preview",
@@ -80,7 +84,6 @@
     "@citation-js/plugin-bibtex": "^0.7.21",
     "@citation-js/plugin-csl": "^0.7.21",
     "commander": "^12.1.0",
-    "pagedjs": "^0.4.3",
     "remark-directive": "^4.0.0",
     "unist-util-visit": "^5.0.0"
   },
@@ -88,6 +91,7 @@
     "@astrojs/check": "^0.9.9",
     "@types/node": "^22.10.2",
     "astro": "^5.7.10",
+    "esbuild": "^0.27.7",
     "playwright": "^1.60.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"

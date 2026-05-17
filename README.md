@@ -220,7 +220,7 @@ Relative `layout` paths are resolved from your Astro project root, so `./src/lay
 
 Your layout receives the rendered Markdown as its slot, plus document props:
 
-`PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
+`PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. It uses a vendored Paged.js ESM bundle, so projects that import the component do not need to install `pagedjs` or add Vite `optimizeDeps` configuration. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
 
 ```astro title="src/layouts/MyDocumentLayout.astro"
 ---
@@ -313,3 +313,7 @@ If a route config omits `route`, it is injected at `/aprint/{collection}` to avo
 `pdf.output`, `pdf.outputDir`, `--output`, and `--output-dir` are normal filesystem paths, not Astro routes. `outputDir` is the base directory, and `output` is resolved inside it. Absolute `output` paths are used as-is. Relative paths are resolved from the project root/current working directory. For example, `outputDir: "public"` plus `/cv-notes` writes `public/cv-notes.pdf`; `outputDir: "public"` plus `output: "CV.pdf"` writes `public/CV.pdf`.
 
 CLI options override the matching config fields, so `--backend` overrides `pdf.backend`, `--output-dir` overrides `pdf.outputDir`, and `--output` overrides `pdf.output`. If no output is specified, the filename is derived from the route: `/` becomes `index.pdf`, `/cv-notes` becomes `cv-notes.pdf`, and `/nested/report` becomes `report.pdf`. If `--port` is omitted, `aprint` asks the OS for an available temporary port; if `--port` is provided, that exact port is used.
+
+## Maintainers
+
+Maintainer notes, including the vendored Paged.js refresh workflow, live in [`AGENTS.md`](AGENTS.md).
