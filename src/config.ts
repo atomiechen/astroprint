@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import type { AprintPdfConfig } from "./astro/index.js";
+import type { AprintPdfConfig } from "./integration.js";
 
 export type AprintManifest = {
   pdf?: AprintPdfConfig;

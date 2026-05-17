@@ -1,4 +1,4 @@
-export { default } from "./astro/index.js";
+export { default } from "./integration.js";
 export { formatBibtexPublication, formatBibtexPublications } from "./lib/bib.js";
 export { generatePdf } from "./pdf.js";
 export { defaultDirectives, remarkAprintDirectives } from "./lib/remark-aprint-directives.js";
@@ -19,7 +19,7 @@ export type {
   AprintAstroOptions,
   AprintPdfConfig,
   AprintRouteConfig,
-} from "./astro/index.js";
+} from "./integration.js";
 export type {
   GeneratePdfOptions,
   PdfBackend,

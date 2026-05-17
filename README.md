@@ -57,8 +57,6 @@ export default defineConfig({
 });
 ```
 
-`aprint/astro` is also exported for projects that prefer an explicit integration subpath.
-
 Define the content collection:
 
 ```ts

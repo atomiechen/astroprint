@@ -4,10 +4,10 @@ import { basename, dirname, isAbsolute, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import remarkDirective from "remark-directive";
 
-import { remarkBibtex, type RemarkBibtexOptions } from "../lib/remark-bibtex.js";
-import { remarkAprintDirectives, type AprintDirectiveOptions } from "../lib/remark-aprint-directives.js";
-import { remarkLogoLinkDirectives } from "../lib/remark-logo-link-directives.js";
-import { remarkStripHtmlComments } from "../lib/remark-strip-html-comments.js";
+import { remarkBibtex, type RemarkBibtexOptions } from "./lib/remark-bibtex.js";
+import { remarkAprintDirectives, type AprintDirectiveOptions } from "./lib/remark-aprint-directives.js";
+import { remarkLogoLinkDirectives } from "./lib/remark-logo-link-directives.js";
+import { remarkStripHtmlComments } from "./lib/remark-strip-html-comments.js";
 
 export type AprintPdfConfig = {
   route: string;

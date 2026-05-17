@@ -34,14 +34,9 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./astro": {
-      "types": "./dist/astro/index.d.ts",
-      "import": "./dist/astro/index.js",
-      "default": "./dist/astro/index.js"
-    },
-    "./components/*.astro": "./src/astro/components/*.astro",
-    "./layouts/*.astro": "./src/astro/layouts/*.astro",
-    "./styles/*.css": "./src/astro/styles/*.css"
+    "./components/*.astro": "./src/components/*.astro",
+    "./layouts/*.astro": "./src/layouts/*.astro",
+    "./styles/*.css": "./src/styles/*.css"
   },
   "peerDependencies": {
     "astro": "^5.0.0"
@@ -56,10 +51,10 @@
   },
   "files": [
     "dist",
-    "src/astro/components",
-    "src/astro/layouts",
-    "src/astro/styles",
-    "src/astro/vendor/pagedjs-0.4.3.esm.min.js",
+    "src/components",
+    "src/layouts",
+    "src/styles",
+    "src/vendor/pagedjs-0.4.3.esm.min.js",
     "src/lib/csl",
     "README.md"
   ],
@@ -72,8 +67,8 @@
     "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
     "pdf": "tsx src/cli.ts pdf",
     "vendor:pagedjs": "npm run vendor:pagedjs:fetch && npm run vendor:pagedjs:minify",
-    "vendor:pagedjs:fetch": "curl -L https://unpkg.com/pagedjs@0.4.3/dist/paged.esm.js -o src/astro/vendor/pagedjs-0.4.3.esm.js",
-    "vendor:pagedjs:minify": "esbuild src/astro/vendor/pagedjs-0.4.3.esm.js --minify --format=esm --outfile=src/astro/vendor/pagedjs-0.4.3.esm.min.js",
+    "vendor:pagedjs:fetch": "curl -L https://unpkg.com/pagedjs@0.4.3/dist/paged.esm.js -o src/vendor/pagedjs-0.4.3.esm.js",
+    "vendor:pagedjs:minify": "esbuild src/vendor/pagedjs-0.4.3.esm.js --minify --format=esm --outfile=src/vendor/pagedjs-0.4.3.esm.min.js",
     "prepack": "npm run build",
     "astro:build": "astro check && astro build",
     "astro:preview": "astro preview",
