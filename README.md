@@ -41,7 +41,7 @@ export default defineConfig({
       routes: [
         {
           collection: "cv",
-          layout: "aprint/layouts/AcademicDocumentLayout.astro",
+          layout: "aprint/layouts/AcademicLayout.astro",
           route: "/aprint",
           previewRoute: "/aprint-preview",
           defaultId: "main",
@@ -68,13 +68,14 @@ const cv = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "src/content/cv" }),
   schema: z.object({
     title: z.string().optional(),
-    name: z.string().optional(),
-    nameZh: z.string().optional(),
+    secondaryTitle: z.string().optional(),
   }),
 });
 
 export const collections = { cv };
 ```
+
+The generated route passes the raw collection `entry` to the configured layout. The built-in academic layout maps `title`/`secondaryTitle`; custom layouts can use any frontmatter shape.
 
 Run Astro for development:
 
@@ -172,24 +173,46 @@ Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { st
 
 ## Custom Layouts
 
-`aprint` separates document structure from theme CSS. `aprint/components/Document.astro` owns the default document root and title markup, and imports `aprint/styles/base.css` for baseline page variables and neutral document root styles. `aprint/layouts/DocumentLayout.astro` owns the navigation, print button, and paged preview branching.
+`aprint` separates document structure from route chrome. `aprint/components/Document.astro` owns the default document root and imports `aprint/styles/base.css` for baseline page variables and neutral document root styles. `aprint/layouts/PreviewLayout.astro` owns the navigation, print button, document `<title>`, and paged preview branching.
 
-The built-in academic theme uses the same extension path a user would use: `aprint/layouts/AcademicDocumentLayout.astro` imports `aprint/styles/academic-cv.css`, then renders `DocumentLayout.astro`. The academic stylesheet overrides base variables and adds theme-specific document styling. The default generated route uses this academic layout.
+The built-in academic theme uses the same extension path a user would use: `aprint/layouts/AcademicLayout.astro` imports `aprint/styles/academic-cv.css`, then renders `Document.astro` and academic title markup inside `BaseLayout.astro` or `PreviewLayout.astro`. The academic stylesheet overrides base variables and adds theme-specific document styling. The default generated route uses this academic layout and passes `preview={true}` so it gets navigation and paged preview.
 
-When a custom theme wraps `DocumentLayout.astro`, it only needs to import its own stylesheet. `DocumentLayout.astro` renders `Document.astro`, and `Document.astro` already imports `base.css`.
+When a custom theme wraps `PreviewLayout.astro`, it only needs to map its document data and provide the document root as the slot. `Document.astro` already imports `base.css`, so wrappers that use it only need to import their theme stylesheet.
 
 ```astro title="src/layouts/MyThemedDocumentLayout.astro"
 ---
 import type { ComponentProps } from "astro/types";
-import DocumentLayout from "aprint/layouts/DocumentLayout.astro";
+import Document from "aprint/components/Document.astro";
+import PreviewLayout from "aprint/layouts/PreviewLayout.astro";
 import "./my-document.css";
 
-type Props = ComponentProps<typeof DocumentLayout>;
+type Props = ComponentProps<typeof PreviewLayout> & {
+  secondaryTitle?: string;
+  entry?: {
+    id?: string;
+    data?: Record<string, unknown>;
+  };
+};
+
+const { entry } = Astro.props;
+const title =
+  Astro.props.title ??
+  (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
+  entry?.id;
+const secondaryTitle =
+  Astro.props.secondaryTitle ??
+  (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined);
 ---
 
-<DocumentLayout {...Astro.props}>
-  <slot />
-</DocumentLayout>
+<PreviewLayout {...Astro.props} pageTitle={title}>
+  <Document>
+    <h1 class="my-title">
+      <span>{title}</span>
+      {secondaryTitle && <span>{secondaryTitle}</span>}
+    </h1>
+    <slot />
+  </Document>
+</PreviewLayout>
 ```
 
 To integrate with your own site chrome, point a document at your own Astro layout:
@@ -214,9 +237,9 @@ export default defineConfig({
 });
 ```
 
-Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/DocumentLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite.
+Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite.
 
-Your layout receives the rendered Markdown as its slot, plus document props:
+Your layout receives the rendered Markdown as its slot, plus route props (`normalHref`, `previewHref`, `printPreview`, `entry`, and `documentConfig`). The generated route does not interpret frontmatter fields; custom layouts can map `entry.data` however they want.
 
 `PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. It uses a vendored Paged.js ESM bundle, so projects that import the component do not need to install `pagedjs` or add Vite `optimizeDeps` configuration. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
 
@@ -227,15 +250,20 @@ import "aprint/styles/base.css";
 import "./my-document.css";
 
 const {
-  title,
-  secondaryTitle,
   normalHref,
   previewHref,
   printPreview = false,
+  entry,
 } = Astro.props;
+
+const title =
+  (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
+  entry?.id;
+const subtitle =
+  typeof entry?.data?.subtitle === "string" ? entry.data.subtitle : undefined;
 ---
 
-<BaseLayout title={title}>
+<BaseLayout pageTitle={title}>
   <SiteNav />
 
   <a href={printPreview ? normalHref : previewHref}>
@@ -251,14 +279,14 @@ const {
       >
         <main class="my-document">
           <h1>{title}</h1>
-          {secondaryTitle && <p>{secondaryTitle}</p>}
+          {subtitle && <p>{subtitle}</p>}
           <slot />
         </main>
       </PrintPreview>
     ) : (
       <main class="my-document">
         <h1>{title}</h1>
-        {secondaryTitle && <p>{secondaryTitle}</p>}
+        {subtitle && <p>{subtitle}</p>}
         <slot />
       </main>
     )
@@ -268,11 +296,11 @@ const {
 
 For a completely custom template, create your own layout and stylesheet, then use the directive classes generated by `aprint` (`.aprint-entry`, `.two-col`, and so on), or extend the directive mapping with the integration `directives` option.
 
-For standalone Markdown pages that should use the built-in academic document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout:
+For standalone Markdown pages that should use the built-in academic document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout. The academic layout defaults to `BaseLayout.astro`; generated routes pass `preview={true}` to use `PreviewLayout.astro`.
 
 ```md title="src/pages/cv-notes.md"
 ---
-layout: aprint/layouts/AcademicMarkdownLayout.astro
+layout: aprint/layouts/AcademicLayout.astro
 title: CV Notes
 secondaryTitle: Draft
 ---

@@ -95,7 +95,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
             previewRoute,
           });
           const collection = routeConfig.collection;
-          const layout = routeConfig.layout ?? "aprint/layouts/AcademicDocumentLayout.astro";
+          const layout = routeConfig.layout ?? "aprint/layouts/AcademicLayout.astro";
           const defaultId = routeConfig.defaultId ?? "main";
           const configFile = new URL(`${name}.json`, codegenDir);
           const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
@@ -171,7 +171,7 @@ const createRouteEntrypoint = ({
   printPreview: boolean;
 }) => `---
 import { getCollection, render } from "astro:content";
-import DocumentLayout from ${JSON.stringify(layout)};
+import RouteLayout from ${JSON.stringify(layout)};
 import documentConfig from "./${configFileName}";
 
 const printPreview = ${String(printPreview)};
@@ -195,16 +195,13 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
-const title = entry.data.title ?? entry.data.name ?? entry.id;
-const secondaryTitle = entry.data.nameZh;
 const suffix = entry.id === defaultId ? "/" : \`/\${entry.id}/\`;
 const normalHref = \`\${route}\${suffix}\`;
 const previewHref = \`\${previewRoute}\${suffix}\`;
 ---
 
-<DocumentLayout
-  title={title}
-  secondaryTitle={secondaryTitle}
+<RouteLayout
+  preview={true}
   normalHref={normalHref}
   previewHref={previewHref}
   printPreview={printPreview}
@@ -212,5 +209,5 @@ const previewHref = \`\${previewRoute}\${suffix}\`;
   documentConfig={documentConfig}
 >
   <Content />
-</DocumentLayout>
+</RouteLayout>
 `;

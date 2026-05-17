@@ -10,7 +10,6 @@
   --aprint-font-size: 1rem;
   --aprint-small-size: 0.9rem;
   --aprint-heading-size: 1.2rem;
-  --aprint-title-size: 2rem;
   --aprint-line-height: 1.5;
   --aprint-serif-font: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --aprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
@@ -38,17 +37,6 @@
   font-family: var(--aprint-serif-font);
   font-size: var(--aprint-font-size);
   line-height: var(--aprint-line-height);
-}
-
-.aprint-title {
-  margin: 0;
-  font-family: inherit;
-  font-size: var(--aprint-title-size);
-  letter-spacing: 0;
-}
-
-.aprint-title-secondary {
-  font-family: var(--aprint-cjk-font);
 }
 
 @media print {

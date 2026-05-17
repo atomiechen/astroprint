@@ -1,0 +1,40 @@
+---
+import type { ComponentProps } from "astro/types";
+import Document from "../components/Document.astro";
+import BaseLayout from "./BaseLayout.astro";
+import PreviewLayout from "./PreviewLayout.astro";
+import "../styles/academic-cv.css";
+
+type Props = ComponentProps<typeof PreviewLayout> & {
+  preview?: boolean;
+  title?: string;
+  secondaryTitle?: string;
+  frontmatter?: Record<string, unknown>;
+  entry?: {
+    id?: string;
+    data?: Record<string, unknown>;
+  };
+};
+
+const { entry, frontmatter, preview = false } = Astro.props;
+const title =
+  Astro.props.title ??
+  (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
+  (typeof frontmatter?.title === "string" ? frontmatter.title : undefined) ??
+  entry?.id;
+const secondaryTitle =
+  Astro.props.secondaryTitle ??
+  (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined) ??
+  (typeof frontmatter?.secondaryTitle === "string" ? frontmatter.secondaryTitle : undefined);
+const Layout = preview ? PreviewLayout : BaseLayout;
+---
+
+<Layout {...Astro.props} pageTitle={title}>
+  <Document>
+    <h1 id="aprint-title" class="aprint-title">
+      <span>{title}</span>
+      {secondaryTitle && <span class="aprint-title-secondary">{secondaryTitle}</span>}
+    </h1>
+    <slot />
+  </Document>
+</Layout>

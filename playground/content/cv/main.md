@@ -1,6 +1,6 @@
 ---
 title: Weihao Chen
-nameZh: 陈伟浩
+secondaryTitle: 陈伟浩
 ---
 
 ::::meta

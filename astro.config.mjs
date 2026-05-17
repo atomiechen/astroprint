@@ -22,7 +22,7 @@ export default defineConfig({
       },
       bibtex: {
         highlightedAuthors: ({ frontmatter }) =>
-          [frontmatter.name, frontmatter.nameZh].filter(
+          [frontmatter.title, frontmatter.secondaryTitle].filter(
             (value) => typeof value === "string",
           ),
       },

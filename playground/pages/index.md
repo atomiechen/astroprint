@@ -1,7 +1,7 @@
 ---
-layout: aprint/layouts/AcademicMarkdownLayout.astro
+layout: aprint/layouts/AcademicLayout.astro
 title: Weihao Chen
-nameZh: 陈伟浩
+secondaryTitle: 陈伟浩
 ---
 
 ::::meta

@@ -34,9 +34,13 @@
 }
 
 .aprint-title {
+  margin: 0;
   padding-top: 15px;
   padding-bottom: 15px;
+  font-family: inherit;
+  font-size: var(--aprint-title-size);
   font-weight: 600;
+  letter-spacing: 0;
   break-inside: avoid;
 }
 

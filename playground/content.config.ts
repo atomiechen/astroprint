@@ -8,8 +8,7 @@ const cv = defineCollection({
   }),
   schema: z.object({
     title: z.string().optional(),
-    name: z.string().optional(),
-    nameZh: z.string().optional(),
+    secondaryTitle: z.string().optional(),
   }),
 });
 
