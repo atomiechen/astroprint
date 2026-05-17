@@ -100,16 +100,18 @@ const {
   }
 </script>
 
-<div
-  class="print-preview-source"
-  data-document-selector={documentSelector}
-  data-style-selector={styleSelector}
-  data-status-selector={statusSelector}
-  data-ready-event={readyEvent}
->
-  <slot />
+<div class="aprint-scope">
+  <div
+    class="print-preview-source"
+    data-document-selector={documentSelector}
+    data-style-selector={styleSelector}
+    data-status-selector={statusSelector}
+    data-ready-event={readyEvent}
+  >
+    <slot />
+  </div>
+  <div class="print-preview-root" aria-live="polite" />
 </div>
-<div class="print-preview-root" aria-live="polite" />
 
 <style is:inline data-print-preview-ignore>
   /*
@@ -135,7 +137,6 @@ const {
     }
 
     .print-preview-root {
-      box-sizing: border-box;
       width: max-content;
       min-width: 100%;
       padding: calc(var(--aprint-print-preview-top-offset, 0px) + 32px) 24px 48px;

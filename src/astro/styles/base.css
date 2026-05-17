@@ -27,8 +27,14 @@
   margin: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);
 }
 
-.aprint-document {
+:where(.aprint-scope),
+:where(.aprint-scope) *,
+:where(.aprint-scope) *::before,
+:where(.aprint-scope) *::after {
   box-sizing: border-box;
+}
+
+.aprint-document {
   width: var(--aprint-document-width);
   margin: 0 auto;
   padding: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);

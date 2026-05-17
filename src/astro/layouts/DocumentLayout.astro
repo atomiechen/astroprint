@@ -32,37 +32,38 @@ const {
       });
     </script>
 
-    <nav class="aprint-nav" aria-label="Document navigation">
-      <a class="aprint-wordmark" href="/">Home</a>
-      <div class="aprint-nav-links">
-        {printPreview && <span class="aprint-preview-status" aria-live="polite">Paginating...</span>}
-        {printPreview ? <a href={normalHref}>Normal View</a> : <a href={previewHref}>Paged Preview</a>}
-        <button class="aprint-nav-button" type="button" data-print-button>Print</button>
-      </div>
-    </nav>
+    <div class="aprint-scope aprint-layout">
+      <nav class="aprint-nav" aria-label="Document navigation">
+        <a class="aprint-wordmark" href="/">Home</a>
+        <div class="aprint-nav-links">
+          {printPreview && <span class="aprint-preview-status" aria-live="polite">Paginating...</span>}
+          {printPreview ? <a href={normalHref}>Normal View</a> : <a href={previewHref}>Paged Preview</a>}
+          <button class="aprint-nav-button" type="button" data-print-button>Print</button>
+        </div>
+      </nav>
 
-    {
-      printPreview ? (
-        <PrintPreview
-          documentSelector=".aprint-document"
-          styleSelector="style:not([data-preview-ignore])"
-          statusSelector=".aprint-preview-status"
-          readyEvent="aprint-print-preview:ready"
-        >
+      {
+        printPreview ? (
+          <PrintPreview
+            documentSelector=".aprint-document"
+            styleSelector="style:not([data-preview-ignore])"
+            statusSelector=".aprint-preview-status"
+            readyEvent="aprint-print-preview:ready"
+          >
+            <Document title={title} secondaryTitle={secondaryTitle}>
+              <slot />
+            </Document>
+          </PrintPreview>
+        ) : (
           <Document title={title} secondaryTitle={secondaryTitle}>
             <slot />
           </Document>
-        </PrintPreview>
-      ) : (
-        <Document title={title} secondaryTitle={secondaryTitle}>
-          <slot />
-        </Document>
-      )
-    }
+        )
+      }
+    </div>
 
     <style is:inline data-preview-ignore>
       .aprint-nav {
-        box-sizing: border-box;
         position: sticky;
         top: 0;
         z-index: 20;
