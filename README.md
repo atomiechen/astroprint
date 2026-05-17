@@ -216,6 +216,8 @@ export default defineConfig({
 });
 ```
 
+Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/DocumentLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite.
+
 Your layout receives the rendered Markdown as its slot, plus document props:
 
 `PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.

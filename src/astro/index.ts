@@ -1,6 +1,7 @@
 import type { AstroIntegration } from "astro";
 import { writeFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, dirname, isAbsolute, relative } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import remarkDirective from "remark-directive";
 
 import { remarkBibtex, type RemarkBibtexOptions } from "../lib/remark-bibtex.js";
@@ -31,6 +32,30 @@ export type AprintAstroOptions = AprintDirectiveOptions & {
 };
 
 const normalizeRoute = (route: string) => route.replace(/\/$/, "") || "/";
+
+const isPathSpecifier = (specifier: string) =>
+  specifier.startsWith("./") || specifier.startsWith("../") || isAbsolute(specifier);
+
+const toImportPath = (path: string) => {
+  const normalized = path.replaceAll("\\", "/");
+  return normalized.startsWith(".") ? normalized : `./${normalized}`;
+};
+
+const resolveLayoutImportSpecifier = ({
+  layout,
+  root,
+  importer,
+}: {
+  layout: string;
+  root: URL;
+  importer: URL;
+}) => {
+  if (!isPathSpecifier(layout)) return layout;
+
+  const importerDir = dirname(fileURLToPath(importer));
+  const layoutUrl = isAbsolute(layout) ? pathToFileURL(layout) : new URL(layout, root);
+  return toImportPath(relative(importerDir, fileURLToPath(layoutUrl)));
+};
 
 export default function aprint(options: AprintAstroOptions = {}): AstroIntegration {
   const routes = options.routes ?? [];
@@ -74,14 +99,24 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
           const configFile = new URL(`${name}.json`, codegenDir);
           const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
           const previewEntrypoint = new URL(`${name}-preview.astro`, codegenDir);
+          const normalLayout = resolveLayoutImportSpecifier({
+            layout,
+            root: config.root,
+            importer: normalEntrypoint,
+          });
+          const previewLayout = resolveLayoutImportSpecifier({
+            layout,
+            root: config.root,
+            importer: previewEntrypoint,
+          });
 
           writeFileSync(configFile, generatedConfig, "utf-8");
           writeFileSync(
             normalEntrypoint,
             createRouteEntrypoint({
-              configFileName: basename(configFile.pathname),
+              configFileName: basename(fileURLToPath(configFile)),
               collection,
-              layout,
+              layout: normalLayout,
               defaultId,
               printPreview: false,
             }),
@@ -90,9 +125,9 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
           writeFileSync(
             previewEntrypoint,
             createRouteEntrypoint({
-              configFileName: basename(configFile.pathname),
+              configFileName: basename(fileURLToPath(configFile)),
               collection,
-              layout,
+              layout: previewLayout,
               defaultId,
               printPreview: true,
             }),
