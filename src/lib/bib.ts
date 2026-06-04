@@ -1,11 +1,7 @@
-import { Cite } from "@citation-js/core";
+import { Cite, plugins } from "@citation-js/core";
+import "@citation-js/plugin-bibtex";
+import "@citation-js/plugin-csl";
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-const { plugins } = require("@citation-js/core") as { plugins: any };
-require("@citation-js/plugin-bibtex");
-require("@citation-js/plugin-csl");
 
 type CslName = {
   given?: string;
