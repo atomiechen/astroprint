@@ -23,6 +23,7 @@ export type AprintRouteConfig = {
   route?: string;
   previewRoute?: string;
   defaultId?: string;
+  injectDuringBuild?: boolean;
 };
 
 export type AprintAstroOptions = AprintDirectiveOptions & {
@@ -67,7 +68,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
   return {
     name: "aprint",
     hooks: {
-      "astro:config:setup": ({ config, updateConfig, injectRoute, createCodegenDir }) => {
+      "astro:config:setup": ({ config, command, updateConfig, injectRoute, createCodegenDir }) => {
         updateConfig({
           markdown: {
             remarkPlugins: [
@@ -82,67 +83,73 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
         });
 
         const codegenDir = createCodegenDir();
+        const isPdfRenderBuild = process.env.APRINT_RENDER_HTML === "true";
 
         for (const [index, routeConfig] of routes.entries()) {
-          const name = `route-${index}`;
-          const route = normalizeRoute(routeConfig.route ?? `/aprint/${routeConfig.collection}`);
-          const defaultPreviewRoute = route === "/" ? "/preview" : `${route}-preview`;
-          const previewRoute = normalizeRoute(routeConfig.previewRoute ?? defaultPreviewRoute);
-          const generatedConfig = JSON.stringify({
-            name,
-            ...routeConfig,
-            route,
-            previewRoute,
-          });
-          const collection = routeConfig.collection;
-          const layout = routeConfig.layout ?? "aprint/layouts/AcademicLayout.astro";
-          const defaultId = routeConfig.defaultId ?? "main";
-          const configFile = new URL(`${name}.json`, codegenDir);
-          const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
-          const previewEntrypoint = new URL(`${name}-preview.astro`, codegenDir);
-          const normalLayout = resolveLayoutImportSpecifier({
-            layout,
-            root: config.root,
-            importer: normalEntrypoint,
-          });
-          const previewLayout = resolveLayoutImportSpecifier({
-            layout,
-            root: config.root,
-            importer: previewEntrypoint,
-          });
+          const shouldInjectRoute =
+            command === "dev" || isPdfRenderBuild || (command === "build" && routeConfig.injectDuringBuild !== false);
 
-          writeFileSync(configFile, generatedConfig, "utf-8");
-          writeFileSync(
-            normalEntrypoint,
-            createRouteEntrypoint({
-              configFileName: basename(fileURLToPath(configFile)),
-              collection,
-              layout: normalLayout,
-              defaultId,
-              printPreview: false,
-            }),
-            "utf-8",
-          );
-          writeFileSync(
-            previewEntrypoint,
-            createRouteEntrypoint({
-              configFileName: basename(fileURLToPath(configFile)),
-              collection,
-              layout: previewLayout,
-              defaultId,
-              printPreview: true,
-            }),
-            "utf-8",
-          );
+          if (shouldInjectRoute) {
+            const name = `route-${index}`;
+            const route = normalizeRoute(routeConfig.route ?? `/aprint/${routeConfig.collection}`);
+            const defaultPreviewRoute = route === "/" ? "/preview" : `${route}-preview`;
+            const previewRoute = normalizeRoute(routeConfig.previewRoute ?? defaultPreviewRoute);
+            const generatedConfig = JSON.stringify({
+              name,
+              ...routeConfig,
+              route,
+              previewRoute,
+            });
+            const collection = routeConfig.collection;
+            const layout = routeConfig.layout ?? "aprint/layouts/AcademicLayout.astro";
+            const defaultId = routeConfig.defaultId ?? "main";
+            const configFile = new URL(`${name}.json`, codegenDir);
+            const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
+            const previewEntrypoint = new URL(`${name}-preview.astro`, codegenDir);
+            const normalLayout = resolveLayoutImportSpecifier({
+              layout,
+              root: config.root,
+              importer: normalEntrypoint,
+            });
+            const previewLayout = resolveLayoutImportSpecifier({
+              layout,
+              root: config.root,
+              importer: previewEntrypoint,
+            });
 
-          injectRoute({
-            pattern: `${route}/[...document]`,
-            entrypoint: normalEntrypoint,
-          });
-          injectRoute({
-            pattern: `${previewRoute}/[...document]`,
-            entrypoint: previewEntrypoint,
-          });
+            writeFileSync(configFile, generatedConfig, "utf-8");
+            writeFileSync(
+              normalEntrypoint,
+              createRouteEntrypoint({
+                configFileName: basename(fileURLToPath(configFile)),
+                collection,
+                layout: normalLayout,
+                defaultId,
+                printPreview: false,
+              }),
+              "utf-8",
+            );
+            writeFileSync(
+              previewEntrypoint,
+              createRouteEntrypoint({
+                configFileName: basename(fileURLToPath(configFile)),
+                collection,
+                layout: previewLayout,
+                defaultId,
+                printPreview: true,
+              }),
+              "utf-8",
+            );
+
+            injectRoute({
+              pattern: `${route}/[...document]`,
+              entrypoint: normalEntrypoint,
+            });
+            injectRoute({
+              pattern: `${previewRoute}/[...document]`,
+              entrypoint: previewEntrypoint,
+            });
+          }
         }
 
         writeFileSync(
@@ -180,9 +187,6 @@ const previewRoute = documentConfig.previewRoute;
 const defaultId = ${JSON.stringify(defaultId)};
 
 export async function getStaticPaths() {
-  const shouldGenerate = import.meta.env.DEV || process.env.APRINT_RENDER_HTML === "true";
-  if (!shouldGenerate) return [];
-
   const entries = await getCollection(${JSON.stringify(collection)});
   const defaultDocumentId = ${JSON.stringify(defaultId)};
   return entries.map((entry) => ({

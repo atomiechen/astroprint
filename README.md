@@ -45,6 +45,8 @@ export default defineConfig({
           route: "/aprint",
           previewRoute: "/aprint-preview",
           defaultId: "main",
+          // Optional. Defaults to true for normal astro build.
+          injectDuringBuild: false,
         },
       ],
       pdf: {
@@ -56,6 +58,8 @@ export default defineConfig({
   ],
 });
 ```
+
+By default, configured routes are injected during normal `astro build`, so `/aprint/` and `/aprint-preview/` can be part of your production site. Set `injectDuringBuild: false` on a route when you only want it during `astro dev` and `aprint pdf`; the PDF command always enables route injection internally with `APRINT_RENDER_HTML=true`.
 
 Define the content collection:
 
@@ -237,7 +241,7 @@ export default defineConfig({
 });
 ```
 
-Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite.
+Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite. Like built-in layouts, custom route layouts follow the route's `injectDuringBuild` setting.
 
 Your layout receives the rendered Markdown as its slot, plus route props (`normalHref`, `previewHref`, `printPreview`, `entry`, and `documentConfig`). The generated route does not interpret frontmatter fields; custom layouts can map `entry.data` however they want.
 
@@ -332,7 +336,7 @@ aprint pdf --route /cv-notes/  # Generate from a regular Astro route
 aprint pdf --route /cv-notes/ --output-dir public
 ```
 
-The PDF command sets `APRINT_RENDER_HTML=true` so injected routes are generated for export. Without top-level `pdf`, use `--route` to print an existing Astro page; `aprint` will not guess a default PDF route.
+The PDF command sets `APRINT_RENDER_HTML=true` so injected routes are generated for export, regardless of each route's `injectDuringBuild` setting. Without top-level `pdf`, use `--route` to print an existing Astro page; `aprint` will not guess a default PDF route.
 
 If a route config omits `route`, it is injected at `/aprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `aprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `aprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `aprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.
 
