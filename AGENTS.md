@@ -65,7 +65,7 @@ APRINT_RENDER_HTML=true npx astro build --outDir .aprint-check
 
 Remove generated validation output afterward. Do not edit `.astro/`, `.aprint/`, `.aprint-check/`, `dist/`, `site-dist/`, or `public/` as source files.
 
-`npm run vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle used by `PrintPreview.astro`.
+`npm run vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s URL import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle loaded by `PrintPreview.astro`.
 
 ## Print Preview
 
@@ -73,7 +73,7 @@ Remove generated validation output afterward. Do not edit `.astro/`, `.aprint/`,
 
 It wraps slotted document content, feeds selected page styles to Paged.js, and requires an explicit `documentSelector` prop. Callers may also pass `styleSelector`, `statusSelector`, and `readyEvent`. `styleSelector` defaults to `style` and should be narrowed when callers need to exclude preview chrome styles.
 
-`PrintPreview.astro` imports the vendored Paged.js ESM bundle from `src/vendor/`, not the `pagedjs` package entrypoint. This keeps the component usable without requiring consuming projects to install `pagedjs` or configure Vite `optimizeDeps`.
+`PrintPreview.astro` imports the vendored Paged.js ESM bundle from `src/vendor/` as a URL asset, then dynamically imports that URL at runtime. This keeps the component usable without requiring consuming projects to install `pagedjs` or configure Vite `optimizeDeps`, while avoiding a large preview-runtime chunk warning during production builds.
 
 The component script initializes all `.print-preview-source` instances because Astro may emit the component script once per page even when the component appears multiple times.
 
