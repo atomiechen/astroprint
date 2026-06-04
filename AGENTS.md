@@ -75,6 +75,8 @@ It wraps slotted document content, feeds selected page styles to Paged.js, and r
 
 `PrintPreview.astro` imports the vendored Paged.js ESM bundle from `src/vendor/` as a URL asset, then dynamically imports that URL at runtime. This keeps the component usable without requiring consuming projects to install `pagedjs` or configure Vite `optimizeDeps`, while avoiding a large preview-runtime chunk warning during production builds.
 
+After Paged.js finishes paginating, `PrintPreview.astro` inserts a browser-print `@page` style with concrete page size and margin values resolved from the source document. Paged.js injects `@page { margin: 0 }` rules for its screen preview, so the aprint print rule must be inserted after pagination. Keep this in sync with the Paged.js preview stylesheet so browser printing from preview routes matches normal document printing.
+
 The component script initializes all `.print-preview-source` instances because Astro may emit the component script once per page even when the component appears multiple times.
 
 Callers must define page variables on the document or `:root`:

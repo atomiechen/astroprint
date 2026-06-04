@@ -53,6 +53,23 @@ const {
       const cssVar = (name: string) => sourceStyles.getPropertyValue(name).trim();
       const pageSize = `${cssVar("--aprint-page-width")} ${cssVar("--aprint-page-height")}`;
       const pageMargin = `${cssVar("--aprint-page-margin-top")} ${cssVar("--aprint-page-margin-x")} ${cssVar("--aprint-page-margin-bottom")}`;
+      const insertPrintPageStyle = () => {
+        let printPageStyle = document.querySelector<HTMLStyleElement>(
+          "style[data-print-preview-page-style]",
+        );
+        if (!printPageStyle) {
+          printPageStyle = document.createElement("style");
+          printPageStyle.setAttribute("data-print-preview-page-style", "");
+          printPageStyle.setAttribute("data-print-preview-ignore", "");
+        }
+        printPageStyle.textContent = `
+          @page {
+            size: ${pageSize};
+            margin: ${pageMargin};
+          }
+        `;
+        document.head.append(printPageStyle);
+      };
 
       const stylesheets = [
         ...Array.from(document.querySelectorAll("link[rel='stylesheet']")).map(
@@ -84,6 +101,10 @@ const {
       previewer
         .preview(previewContent, stylesheets, previewTarget)
         .then((flow) => {
+          // Paged.js injects @page { margin: 0 } for its screen preview.
+          // Insert the browser-print rule after pagination so normal printing
+          // from the preview route uses the document's real page margins.
+          insertPrintPageStyle();
           if (status) status.textContent = `${flow.pages.length} pages`;
           if (readyEvent) window.dispatchEvent(new Event(readyEvent));
         })
