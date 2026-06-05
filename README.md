@@ -35,6 +35,8 @@ export default defineConfig({
 });
 ```
 
+The integration also excludes astroprint-generated work directories matching `**/.astroprint*/**` from Vite's dev-server watcher.
+
 Add `routes` only when you want `astroprint` to inject collection-backed normal and paged-preview routes. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`:
 
 ```js title="astro.config.mjs"

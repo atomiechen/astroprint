@@ -6,6 +6,8 @@
 
 Calling `astroprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
 
+The integration should update Vite config so `vite.server.watch.ignored` includes `**/.astroprint*/**`. Preserve caller-owned watcher ignores via Astro/Vite config merging, and do not re-add the exact pattern when it is already configured.
+
 Route injection should be decided before calling `injectRoute`, not inside generated route `getStaticPaths()`. Generated routes should assume they are meant to render once injected. In `astro dev`, always inject configured routes. In PDF render builds, `ASTROPRINT_RENDER_HTML=true` must force route injection regardless of route flags so `astroprint pdf` can reach configured routes. In normal `astro build`, each route's `injectDuringBuild` flag controls injection; it defaults to `true`, and `false` keeps that route out of the production build graph to avoid preview-only client chunks such as `PrintPreview.astro` unless the user opted in.
 
 When a route config omits `route`, the default route is `/astroprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.

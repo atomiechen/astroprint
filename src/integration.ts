@@ -34,6 +34,7 @@ export type AstroPrintAstroOptions = AstroPrintDirectiveOptions & {
 };
 
 const normalizeRoute = (route: string) => route.replace(/\/$/, "") || "/";
+const astroprintWatchIgnore = "**/.astroprint*/**";
 
 const isPathSpecifier = (specifier: string) =>
   specifier.startsWith("./") || specifier.startsWith("../") || isAbsolute(specifier);
@@ -59,6 +60,9 @@ const resolveLayoutImportSpecifier = ({
   return toImportPath(relative(importerDir, fileURLToPath(layoutUrl)));
 };
 
+const hasAstroprintWatchIgnore = (ignored: unknown) =>
+  Array.isArray(ignored) ? ignored.includes(astroprintWatchIgnore) : ignored === astroprintWatchIgnore;
+
 export default function astroprint(options: AstroPrintAstroOptions = {}): AstroIntegration {
   const routes = options.routes ?? [];
   const pdf = options.pdf;
@@ -79,6 +83,13 @@ export default function astroprint(options: AstroPrintAstroOptions = {}): AstroI
               [remarkAstroPrintDirectives, { directives: options.directives } satisfies AstroPrintDirectiveOptions],
               ...(stripHtmlComments ? [remarkStripHtmlComments] : []),
             ],
+          },
+          vite: {
+            server: {
+              watch: {
+                ignored: hasAstroprintWatchIgnore(config.vite.server?.watch?.ignored) ? [] : [astroprintWatchIgnore],
+              },
+            },
           },
         });
 
