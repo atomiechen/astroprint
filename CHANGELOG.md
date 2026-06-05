@@ -1,8 +1,16 @@
-# Change Log
+# Changelog
 
 All notable changes will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+
+## 0.1.1 - 2026-06-06
+
+### Added
+
+- The integration now adds `**/.astroprint*/**` to Vite's dev-server watch ignore list automatically, while preserving caller-owned ignore settings.
+- `astroprint pdf` now writes `.astroprint/.gitignore` after the temporary Astro build so generated PDF HTML output stays ignored even when the build recreates the directory.
 
 
 ## 0.1.0 - 2026-06-05
