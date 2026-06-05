@@ -58,8 +58,8 @@ HTML comment removal is handled separately by `src/lib/remark-strip-html-comment
 - Build package output: `pnpm build`
 - Run the Astro playground dev server: `pnpm dev`
 - Refresh the vendored Paged.js bundle: `pnpm vendor:pagedjs`
-- Generate a configured PDF through the CLI: `pnpm pdf`
-- Generate a manual page-route PDF through the CLI: `pnpm pdf -- --route /`
+- Generate a configured PDF through the CLI: `pnpm astroprint pdf`
+- Generate a manual page-route PDF through the CLI: `pnpm astroprint pdf -- --route /`
 
 For validating injected document routes in a static build, run:
 

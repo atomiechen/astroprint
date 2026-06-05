@@ -73,7 +73,7 @@
     "postbuild": "node scripts/postbuild.mjs",
     "dev": "astro dev",
     "check": "astro sync && tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
-    "pdf": "tsx src/cli.ts pdf",
+    "astroprint": "tsx src/cli.ts",
     "vendor:pagedjs": "pnpm vendor:pagedjs:fetch && pnpm vendor:pagedjs:minify",
     "vendor:pagedjs:fetch": "curl -L https://unpkg.com/pagedjs@0.4.3/dist/paged.esm.js -o src/vendor/pagedjs-0.4.3.esm.js",
     "vendor:pagedjs:minify": "esbuild src/vendor/pagedjs-0.4.3.esm.js --minify --format=esm --outfile=src/vendor/pagedjs-0.4.3.esm.min.js",
