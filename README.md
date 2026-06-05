@@ -24,14 +24,14 @@ Use the equivalent `pnpm astro add`, `yarn astro add`, or `bunx astro add` comma
 
 `astroprint` currently targets Node 20+ and Astro 5.
 
-With no options, `astroprint()` only installs Markdown processing plugins for directives, `:logolink`, BibTeX conversion, and HTML comment stripping. Use normal Astro pages and layouts when you want to control routes yourself:
+With no options, the integration only installs Markdown processing plugins for directives, `:logolink`, BibTeX conversion, and HTML comment stripping. `astro add` imports it as `print` by default, so use normal Astro pages and layouts when you want to control routes yourself:
 
 ```js title="astro.config.mjs"
 import { defineConfig } from "astro/config";
-import astroprint from "astroprint";
+import print from "astroprint";
 
 export default defineConfig({
-  integrations: [astroprint()],
+  integrations: [print()],
 });
 ```
 
@@ -40,11 +40,11 @@ Add `routes` only when you want `astroprint` to inject collection-backed normal 
 ```js title="astro.config.mjs"
 // astro.config.mjs
 import { defineConfig } from "astro/config";
-import astroprint from "astroprint";
+import print from "astroprint";
 
 export default defineConfig({
   integrations: [
-    astroprint({
+    print({
       routes: [
         {
           collection: "cv",
@@ -177,11 +177,11 @@ You can add your own vocabulary through the integration `directives` option:
 
 ```js title="astro.config.mjs"
 import { defineConfig } from "astro/config";
-import astroprint from "astroprint";
+import print from "astroprint";
 
 export default defineConfig({
   integrations: [
-    astroprint({
+    print({
       directives: {
         callout: {
           tag: "aside",
@@ -262,11 +262,11 @@ Then point the generated route at that layout:
 
 ```js title="astro.config.mjs"
 import { defineConfig } from "astro/config";
-import astroprint from "astroprint";
+import print from "astroprint";
 
 export default defineConfig({
   integrations: [
-    astroprint({
+    print({
       routes: [
         {
           collection: "cv",
