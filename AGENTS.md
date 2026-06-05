@@ -12,6 +12,8 @@ Route injection should be decided before calling `injectRoute`, not inside gener
 
 When a route config omits `route`, the default route is `/astroprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
 
+`astroprint pdf` builds temporary HTML into `.astroprint/`. After the Astro build, write `.astroprint/.gitignore` with `*` because the build may recreate the output directory; do not unignore that file from inside itself. Validation directories such as `.astroprint-check/` remain maintainer-managed.
+
 The package code lives in `src/`. Built-in Astro surfaces live directly under top-level source folders:
 
 - `src/components/Document.astro` is the theme-neutral default document root. It should not render title markup or assume frontmatter fields.

@@ -324,6 +324,8 @@ astroprint pdf --route /cv-notes/ --output-dir public
 
 The PDF command sets `ASTROPRINT_RENDER_HTML=true` so injected routes are generated for export, regardless of each route's `injectDuringBuild` setting. Without top-level `pdf`, use `--route` to print an existing Astro page; `astroprint` will not guess a default PDF route.
 
+`astroprint pdf` builds temporary HTML into `.astroprint/` before rendering the PDF.
+
 `npx astroprint ...` runs the `astroprint` CLI, but the Playwright backend imports the `playwright` package from the project at runtime. Install Playwright in the project when using `backend: "playwright"`; `npx playwright ...` is useful for Playwright's own install/setup commands, but it does not replace the runtime dependency.
 
 If a route config omits `route`, it is injected at `/astroprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `astroprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `astroprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `astroprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.

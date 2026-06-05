@@ -1,5 +1,5 @@
 import { createReadStream, existsSync } from "node:fs";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 
@@ -138,6 +138,14 @@ const resolveOutputPath = ({
   return resolve(resolvePathFromRoot(root, outputDir), output);
 };
 
+const writeTemporaryBuildGitignore = async (distDir: string) => {
+  await writeFile(
+    join(distDir, ".gitignore"),
+    "*",
+    "utf-8",
+  );
+};
+
 export const generatePdf = async ({
   root = process.cwd(),
   route: routeOption,
@@ -158,6 +166,7 @@ export const generatePdf = async ({
         ASTROPRINT_RENDER_HTML: "true",
       },
     });
+    await writeTemporaryBuildGitignore(distDir);
 
     const config = await loadAstroPrintManifest(root);
     const pdfConfig = config.pdf;
