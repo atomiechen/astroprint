@@ -3,6 +3,7 @@ import { Command } from "commander";
 
 import { generatePdf, type PdfBackend } from "./pdf.js";
 import { runLocalBin } from "./run.js";
+import { version } from "./version.js";
 
 const program = new Command();
 const pdfBackends = new Set<PdfBackend>(["weasyprint", "playwright"]);
@@ -23,7 +24,7 @@ const parsePort = (port: string | undefined) => {
 program
   .name("astroprint")
   .description("Astro-powered Markdown documents with paged preview and PDF export.")
-  .version("0.1.0");
+  .version(version);
 
 program
   .command("dev")
