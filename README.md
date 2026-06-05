@@ -1,5 +1,10 @@
 # astroprint — print-ready Markdown for Astro
 
+[![NPM](https://img.shields.io/npm/v/astroprint?logo=npm&label=astroprint)](https://www.npmjs.com/package/astroprint)
+[![GitHub](https://img.shields.io/badge/github-gray?logo=github)](https://github.com/atomiechen/astroprint)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/atomiechen/astroprint)
+
+
 Print-ready Markdown documents for [Astro](https://astro.build/), with normal web preview, Paged.js preview, and PDF export.
 
 Use `astroprint` for CVs, reports, notes, and other Markdown-first documents that should stay editable as Astro pages while still exporting clean PDFs. It uses Astro's content, layout, asset, and dev-server behavior, then adds print-oriented Markdown transforms, optional document routes, paged preview, and a PDF CLI.
