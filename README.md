@@ -1,8 +1,8 @@
-# aprint
+# aprint — print-ready Markdown for Astro
 
-Astro-powered Markdown documents with normal web preview, paged preview, and PDF export.
+Print-ready Markdown documents for [Astro](https://astro.build/), with normal web preview, Paged.js preview, and PDF export.
 
-`aprint` intentionally leans on Astro instead of reimplementing a dev server, Markdown pipeline, asset handling, image optimization, or HMR.
+Use `aprint` for CVs, reports, notes, and other Markdown-first documents that should stay editable as Astro pages while still exporting clean PDFs. It uses Astro's content, layout, asset, and dev-server behavior, then adds print-oriented Markdown transforms, optional document routes, paged preview, and a PDF CLI.
 
 ## Quick Start
 
@@ -16,6 +16,8 @@ npx astro add aprint
 
 This installs `aprint` and updates `astro.config.mjs` with the default integration setup.
 Use the equivalent `pnpm astro add`, `yarn astro add`, or `bunx astro add` command if your project uses another package manager.
+
+`aprint` currently targets Node 20+ and Astro 5.
 
 With no options, `aprint()` only installs Markdown processing plugins for directives, `:logolink`, BibTeX conversion, and HTML comment stripping. Use normal Astro pages and layouts when you want to control routes yourself:
 
@@ -81,6 +83,31 @@ export const collections = { cv };
 
 The generated route passes the raw collection `entry` to the configured layout. The built-in academic layout maps `title`/`secondaryTitle`; custom layouts can use any frontmatter shape.
 
+Add at least one Markdown file to the collection:
+
+```md title="src/content/cv/main.md"
+---
+title: Ada Lovelace
+secondaryTitle: Computing Notes
+---
+
+:::::ul{.two-col}
+
+::::entry
+:::col
+**Example University**
+:::
+
+:::col
+2026
+:::
+::::
+
+:::::
+```
+
+The filename becomes the document id. This example uses `main.md` because the route config above sets `defaultId: "main"`, so it renders at `/aprint/`. Other ids render at paths such as `/aprint/example/`, or you can change `defaultId`.
+
 Run Astro for development:
 
 ```bash
@@ -97,6 +124,15 @@ Generate the final PDF:
 ```bash
 npx aprint pdf
 ```
+
+Supported PDF backends:
+
+| Backend | Install |
+| --- | --- |
+| `weasyprint` (default) | Install the `weasyprint` command for your platform. See the [WeasyPrint installation guide](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation). |
+| `playwright` | Install Playwright and a browser for your environment. See the [Playwright browser installation guide](https://playwright.dev/docs/browsers). |
+
+For `weasyprint`, set `WEASYPRINT_BIN=/path/to/weasyprint` when the executable is not named `weasyprint` or is not on `PATH`.
 
 For manually routed pages, pass the route explicitly:
 
@@ -177,11 +213,9 @@ Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { st
 
 ## Custom Layouts
 
-`aprint` separates document structure from route chrome. `aprint/components/Document.astro` owns the default document root and imports `aprint/styles/base.css` for baseline page variables and neutral document root styles. `aprint/layouts/PreviewLayout.astro` owns the navigation, print button, document `<title>`, and paged preview branching.
+`aprint` separates document structure from route chrome. `aprint/components/Document.astro` provides the default document root and baseline page styles. `aprint/layouts/PreviewLayout.astro` provides the generated route chrome, print button, document `<title>`, and paged-preview branching.
 
-The built-in academic theme uses the same extension path a user would use: `aprint/layouts/AcademicLayout.astro` imports `aprint/styles/academic-cv.css`, then renders `Document.astro` and academic title markup inside `BaseLayout.astro` or `PreviewLayout.astro`. The academic stylesheet overrides base variables and adds theme-specific document styling. The default generated route uses this academic layout and passes `preview={true}` so it gets navigation and paged preview.
-
-When a custom theme wraps `PreviewLayout.astro`, it only needs to map its document data and provide the document root as the slot. `Document.astro` already imports `base.css`, so wrappers that use it only need to import their theme stylesheet.
+When a custom theme wraps `PreviewLayout.astro`, it mainly needs to map collection data into markup and import its own stylesheet:
 
 ```astro title="src/layouts/MyThemedDocumentLayout.astro"
 ---
@@ -219,7 +253,7 @@ const secondaryTitle =
 </PreviewLayout>
 ```
 
-To integrate with your own site chrome, point a document at your own Astro layout:
+Then point the generated route at that layout:
 
 ```js title="astro.config.mjs"
 import { defineConfig } from "astro/config";
@@ -231,7 +265,7 @@ export default defineConfig({
       routes: [
         {
           collection: "cv",
-          layout: "./src/layouts/MyDocumentLayout.astro",
+          layout: "./src/layouts/MyThemedDocumentLayout.astro",
           route: "/aprint",
           previewRoute: "/aprint-preview",
         },
@@ -241,62 +275,7 @@ export default defineConfig({
 });
 ```
 
-Relative `layout` paths are resolved from your Astro project root, so `./src/layouts/MyDocumentLayout.astro` means the same thing it would mean from `astro.config.mjs`. Package specifiers and aliases, such as `aprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite. Like built-in layouts, custom route layouts follow the route's `injectDuringBuild` setting.
-
-Your layout receives the rendered Markdown as its slot, plus route props (`normalHref`, `previewHref`, `printPreview`, `entry`, and `documentConfig`). The generated route does not interpret frontmatter fields; custom layouts can map `entry.data` however they want.
-
-`PrintPreview.astro` is preview-only. Render it only when `printPreview` is true, and render the document directly for normal routes. It loads a vendored Paged.js ESM bundle at runtime, so projects that import the component do not need to install `pagedjs` or add Vite `optimizeDeps` configuration, and production builds avoid a large preview-runtime chunk warning. After Paged.js finishes paginating, it writes a browser-print `@page` rule from the resolved `--aprint-page-*` variables so printing from the preview page uses the same page size and margins as the normal document route. If you render your own document root instead of `Document.astro`, import `aprint/styles/base.css` or define equivalent page variables and `@page` rules yourself. If your layout has preview-only chrome styles, keep them in a top-level `<style is:inline data-preview-ignore>` block and pass a narrowed `styleSelector` so Paged.js receives document styles without the surrounding UI styles.
-
-```astro title="src/layouts/MyDocumentLayout.astro"
----
-import PrintPreview from "aprint/components/PrintPreview.astro";
-import "aprint/styles/base.css";
-import "./my-document.css";
-
-const {
-  normalHref,
-  previewHref,
-  printPreview = false,
-  entry,
-} = Astro.props;
-
-const title =
-  (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
-  entry?.id;
-const subtitle =
-  typeof entry?.data?.subtitle === "string" ? entry.data.subtitle : undefined;
----
-
-<BaseLayout pageTitle={title}>
-  <SiteNav />
-
-  <a href={printPreview ? normalHref : previewHref}>
-    {printPreview ? "Normal view" : "Paged preview"}
-  </a>
-
-  {
-    printPreview ? (
-      <PrintPreview
-        documentSelector=".my-document"
-        styleSelector="style:not([data-preview-ignore])"
-        statusSelector="[data-preview-status]"
-      >
-        <main class="my-document">
-          <h1>{title}</h1>
-          {subtitle && <p>{subtitle}</p>}
-          <slot />
-        </main>
-      </PrintPreview>
-    ) : (
-      <main class="my-document">
-        <h1>{title}</h1>
-        {subtitle && <p>{subtitle}</p>}
-        <slot />
-      </main>
-    )
-  }
-</BaseLayout>
-```
+Relative `layout` paths are resolved from your Astro project root. Package specifiers and aliases, such as `aprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite. The generated route passes rendered Markdown as the slot, plus route props such as `normalHref`, `previewHref`, `printPreview`, `entry`, and `documentConfig`.
 
 For a completely custom template, create your own layout and stylesheet, then use the directive classes generated by `aprint` (`.aprint-entry`, `.two-col`, and so on), or extend the directive mapping with the integration `directives` option.
 
@@ -338,6 +317,8 @@ aprint pdf --route /cv-notes/ --output-dir public
 
 The PDF command sets `APRINT_RENDER_HTML=true` so injected routes are generated for export, regardless of each route's `injectDuringBuild` setting. Without top-level `pdf`, use `--route` to print an existing Astro page; `aprint` will not guess a default PDF route.
 
+`npx aprint ...` runs the `aprint` CLI, but the Playwright backend imports the `playwright` package from the project at runtime. Install Playwright in the project when using `backend: "playwright"`; `npx playwright ...` is useful for Playwright's own install/setup commands, but it does not replace the runtime dependency.
+
 If a route config omits `route`, it is injected at `/aprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `aprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `aprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `aprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.
 
 `pdf.output`, `pdf.outputDir`, `--output`, and `--output-dir` are normal filesystem paths, not Astro routes. `outputDir` is the base directory, and `output` is resolved inside it. Absolute `output` paths are used as-is. Relative paths are resolved from the project root/current working directory. For example, `outputDir: "public"` plus `/cv-notes` writes `public/cv-notes.pdf`; `outputDir: "public"` plus `output: "CV.pdf"` writes `public/CV.pdf`.
@@ -346,4 +327,4 @@ CLI options override the matching config fields, so `--backend` overrides `pdf.b
 
 ## Maintainers
 
-Maintainer notes, including the vendored Paged.js refresh workflow, live in [`AGENTS.md`](AGENTS.md).
+Maintainer notes, including the vendored Paged.js refresh workflow, live in [`AGENTS.md`](https://github.com/atomiechen/aprint/blob/main/AGENTS.md).
