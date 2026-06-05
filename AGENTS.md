@@ -49,23 +49,23 @@ HTML comment removal is handled separately by `src/lib/remark-strip-html-comment
 
 ## Commands
 
-- Install dependencies: `npm install`
-- Type-check package and playground: `npm run check`
-- Build package output: `npm run build`
-- Run the Astro playground dev server: `npm run dev`
-- Refresh the vendored Paged.js bundle: `npm run vendor:pagedjs`
-- Generate a configured PDF through the CLI: `npm run pdf`
-- Generate a manual page-route PDF through the CLI: `npm run pdf -- --route /`
+- Install dependencies: `pnpm install --frozen-lockfile`
+- Type-check package and playground: `pnpm check`
+- Build package output: `pnpm build`
+- Run the Astro playground dev server: `pnpm dev`
+- Refresh the vendored Paged.js bundle: `pnpm vendor:pagedjs`
+- Generate a configured PDF through the CLI: `pnpm pdf`
+- Generate a manual page-route PDF through the CLI: `pnpm pdf -- --route /`
 
 For validating injected document routes in a static build, run:
 
 ```bash
-APRINT_RENDER_HTML=true npx astro build --outDir .aprint-check
+APRINT_RENDER_HTML=true pnpm exec astro build --outDir .aprint-check
 ```
 
 Remove generated validation output afterward. Do not edit `.astro/`, `.aprint/`, `.aprint-check/`, `dist/`, `site-dist/`, or `public/` as source files.
 
-`npm run vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s URL import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle loaded by `PrintPreview.astro`.
+`pnpm vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s URL import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle loaded by `PrintPreview.astro`.
 
 ## Print Preview
 
