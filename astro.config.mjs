@@ -1,12 +1,12 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import astroprint from "./src";
+import print from "./src";
 
 export default defineConfig({
   srcDir: "playground",
   outDir: "site-dist",
   integrations: [
-    astroprint({
+    print({
       routes: [
         {
           collection: "cv",
