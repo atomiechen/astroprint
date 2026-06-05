@@ -1,11 +1,16 @@
 {
   "name": "aprint",
   "version": "0.1.0",
-  "description": "Astro integration for academic, print-ready, Markdown-first documents with paged preview and PDF export.",
+  "description": "Astro integration for print-ready, Markdown-first documents with paged preview and PDF export.",
+  "author": "Atomie CHEN <atomic_cwh@163.com>",
+  "license": "MIT",
   "homepage": "https://github.com/atomiechen/aprint#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/atomiechen/aprint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/atomiechen/aprint/issues"
   },
   "keywords": [
     "withastro",
