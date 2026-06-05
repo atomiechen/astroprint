@@ -39,9 +39,9 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
-    "./components/*.astro": "./src/components/*.astro",
-    "./layouts/*.astro": "./src/layouts/*.astro",
-    "./styles/*.css": "./src/styles/*.css"
+    "./components/*.astro": "./dist/components/*.astro",
+    "./layouts/*.astro": "./dist/layouts/*.astro",
+    "./styles/*.css": "./dist/styles/*.css"
   },
   "peerDependencies": {
     "astro": "^5.0.0"
@@ -55,19 +55,22 @@
     "aprint": "./dist/cli.js"
   },
   "files": [
-    "dist",
-    "src/components",
-    "src/layouts",
-    "src/styles",
-    "src/vendor/pagedjs-0.4.3.esm.min.js",
-    "src/lib/csl",
-    "README.md"
+    "dist"
   ],
+  "aprint": {
+    "assets": [
+      "components",
+      "layouts",
+      "styles",
+      "vendor/pagedjs-0.4.3.esm.min.js",
+      "lib/csl"
+    ]
+  },
   "scripts": {
     "clean": "node -e \"fs.rmSync('dist', { force: true, recursive: true })\"",
     "prebuild": "pnpm check && pnpm clean",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "node scripts/fix-bin-mode.mjs",
+    "postbuild": "node scripts/postbuild.mjs",
     "dev": "astro dev",
     "check": "tsc -p tsconfig.playground.json --noEmit && tsc -p tsconfig.build.json --noEmit",
     "pdf": "tsx src/cli.ts pdf",

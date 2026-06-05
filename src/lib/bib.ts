@@ -59,8 +59,8 @@ const registerCslStyles = () => {
   if (cslStylesRegistered) return;
 
   const config = plugins.config.get("@csl");
-  const apaStyle = readFileSync(new URL("../../src/lib/csl/apa.csl", import.meta.url), "utf8");
-  const ieeeStyle = readFileSync(new URL("../../src/lib/csl/ieee.csl", import.meta.url), "utf8");
+  const apaStyle = readFileSync(new URL("./csl/apa.csl", import.meta.url), "utf8");
+  const ieeeStyle = readFileSync(new URL("./csl/ieee.csl", import.meta.url), "utf8");
   config.templates.add(cslTemplates.apa, apaStyle);
   config.templates.add(cslTemplates.ieee, ieeeStyle);
 
