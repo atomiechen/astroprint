@@ -1,15 +1,15 @@
 import { visit } from "unist-util-visit";
 
-export type AprintDirectiveDefinition = {
+export type AstroPrintDirectiveDefinition = {
   tag?: string;
   className?: string | string[];
 };
 
-export type AprintDirectiveOptions = {
-  directives?: Record<string, AprintDirectiveDefinition>;
+export type AstroPrintDirectiveOptions = {
+  directives?: Record<string, AstroPrintDirectiveDefinition>;
 };
 
-const defaultDirectives: Record<string, AprintDirectiveDefinition> = {
+const defaultDirectives: Record<string, AstroPrintDirectiveDefinition> = {
   ul: { tag: "ul" },
   "unordered-list": { tag: "ul" },
   ol: { tag: "ol" },
@@ -85,7 +85,7 @@ const applyAttributes = (node: Record<string, unknown>) => {
   data.hProperties = properties;
 };
 
-const applyDirective = (node: Record<string, unknown>, directive: AprintDirectiveDefinition) => {
+const applyDirective = (node: Record<string, unknown>, directive: AstroPrintDirectiveDefinition) => {
   const data = ensureNodeData(node);
 
   if (directive.tag) {
@@ -97,7 +97,7 @@ const applyDirective = (node: Record<string, unknown>, directive: AprintDirectiv
   }
 };
 
-export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => {
+export const remarkAstroPrintDirectives = (options: AstroPrintDirectiveOptions = {}) => {
   const directives = {
     ...defaultDirectives,
     ...options.directives,
@@ -114,9 +114,9 @@ export const remarkAprintDirectives = (options: AprintDirectiveOptions = {}) => 
         // set default tag if not specified by user
         const {
           tag = node.type === "textDirective" ? "span" : "div",
-          className = `aprint-${node.name}`,
+          className = `astroprint-${node.name}`,
         } = userDirective;
-        const directive = { tag, className } satisfies AprintDirectiveDefinition;
+        const directive = { tag, className } satisfies AstroPrintDirectiveDefinition;
         applyAttributes(node);
         applyDirective(node, directive);
       }

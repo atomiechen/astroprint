@@ -62,7 +62,7 @@ export const remarkBibtex = (options: RemarkBibtexOptions = {}) => (tree: unknow
     });
 
     node.type = "html";
-    node.value = `<p class="aprint-bibtex">${formatted.html}</p>`;
+    node.value = `<p class="astroprint-bibtex">${formatted.html}</p>`;
     delete node.lang;
     delete node.meta;
     delete node.children;

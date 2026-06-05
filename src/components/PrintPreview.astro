@@ -51,8 +51,8 @@ const {
 
       const sourceStyles = getComputedStyle(sourceDocument);
       const cssVar = (name: string) => sourceStyles.getPropertyValue(name).trim();
-      const pageSize = `${cssVar("--aprint-page-width")} ${cssVar("--aprint-page-height")}`;
-      const pageMargin = `${cssVar("--aprint-page-margin-top")} ${cssVar("--aprint-page-margin-x")} ${cssVar("--aprint-page-margin-bottom")}`;
+      const pageSize = `${cssVar("--astroprint-page-width")} ${cssVar("--astroprint-page-height")}`;
+      const pageMargin = `${cssVar("--astroprint-page-margin-top")} ${cssVar("--astroprint-page-margin-x")} ${cssVar("--astroprint-page-margin-bottom")}`;
       const insertPrintPageStyle = () => {
         let printPageStyle = document.querySelector<HTMLStyleElement>(
           "style[data-print-preview-page-style]",
@@ -120,7 +120,7 @@ const {
   }
 </script>
 
-<div class="aprint-scope">
+<div class="astroprint-scope">
   <div
     class="print-preview-source"
     data-document-selector={documentSelector}
@@ -136,9 +136,9 @@ const {
 <style is:inline data-print-preview-ignore>
   /*
     Caller-owned page variables:
-    required: --aprint-page-width, --aprint-page-height, --aprint-page-margin-top,
-    --aprint-page-margin-x, --aprint-page-margin-bottom
-    optional: --aprint-print-preview-top-offset
+    required: --astroprint-page-width, --astroprint-page-height, --astroprint-page-margin-top,
+    --astroprint-page-margin-x, --astroprint-page-margin-bottom
+    optional: --astroprint-print-preview-top-offset
   */
 
   @media screen {
@@ -159,7 +159,7 @@ const {
     .print-preview-root {
       width: max-content;
       min-width: 100%;
-      padding: calc(var(--aprint-print-preview-top-offset, 0px) + 32px) 24px 48px;
+      padding: calc(var(--astroprint-print-preview-top-offset, 0px) + 32px) 24px 48px;
     }
 
     .print-preview-root .print-preview-document {

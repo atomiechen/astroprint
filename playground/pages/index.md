@@ -1,5 +1,5 @@
 ---
-layout: aprint/layouts/AcademicLayout.astro
+layout: astroprint/layouts/AcademicLayout.astro
 title: Weihao Chen
 secondaryTitle: 陈伟浩
 ---

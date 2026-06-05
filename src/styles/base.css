@@ -1,46 +1,46 @@
 :root {
-  --aprint-page-width: 210mm;
-  --aprint-page-height: 297mm;
-  --aprint-document-width: min(100%, var(--aprint-page-width));
-  --aprint-page-margin-top: 3rem;
-  --aprint-page-margin-x: 1rem;
-  --aprint-page-margin-bottom: 3rem;
-  --aprint-ink: #181716;
-  --aprint-link: #9a3947;
-  --aprint-font-size: 1rem;
-  --aprint-small-size: 0.9rem;
-  --aprint-heading-size: 1.2rem;
-  --aprint-line-height: 1.5;
-  --aprint-serif-font: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --aprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
-  --aprint-nav-height: 43px;
-  --aprint-print-preview-top-offset: var(--aprint-nav-height);
+  --astroprint-page-width: 210mm;
+  --astroprint-page-height: 297mm;
+  --astroprint-document-width: min(100%, var(--astroprint-page-width));
+  --astroprint-page-margin-top: 3rem;
+  --astroprint-page-margin-x: 1rem;
+  --astroprint-page-margin-bottom: 3rem;
+  --astroprint-ink: #181716;
+  --astroprint-link: #9a3947;
+  --astroprint-font-size: 1rem;
+  --astroprint-small-size: 0.9rem;
+  --astroprint-heading-size: 1.2rem;
+  --astroprint-line-height: 1.5;
+  --astroprint-serif-font: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --astroprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+  --astroprint-nav-height: 43px;
+  --astroprint-print-preview-top-offset: var(--astroprint-nav-height);
 }
 
 @page {
-  size: var(--aprint-page-width) var(--aprint-page-height);
-  margin: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);
+  size: var(--astroprint-page-width) var(--astroprint-page-height);
+  margin: var(--astroprint-page-margin-top) var(--astroprint-page-margin-x) var(--astroprint-page-margin-bottom);
 }
 
-:where(.aprint-scope),
-:where(.aprint-scope) *,
-:where(.aprint-scope) *::before,
-:where(.aprint-scope) *::after {
+:where(.astroprint-scope),
+:where(.astroprint-scope) *,
+:where(.astroprint-scope) *::before,
+:where(.astroprint-scope) *::after {
   box-sizing: border-box;
 }
 
-.aprint-document {
-  width: var(--aprint-document-width);
+.astroprint-document {
+  width: var(--astroprint-document-width);
   margin: 0 auto;
-  padding: var(--aprint-page-margin-top) var(--aprint-page-margin-x) var(--aprint-page-margin-bottom);
-  color: var(--aprint-ink);
-  font-family: var(--aprint-serif-font);
-  font-size: var(--aprint-font-size);
-  line-height: var(--aprint-line-height);
+  padding: var(--astroprint-page-margin-top) var(--astroprint-page-margin-x) var(--astroprint-page-margin-bottom);
+  color: var(--astroprint-ink);
+  font-family: var(--astroprint-serif-font);
+  font-size: var(--astroprint-font-size);
+  line-height: var(--astroprint-line-height);
 }
 
 @media print {
-  .aprint-document {
+  .astroprint-document {
     width: 100%;
     max-width: none;
     padding: 0;

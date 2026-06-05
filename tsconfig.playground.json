@@ -4,8 +4,8 @@
   "include": [".astro/types.d.ts", "astro.config.mjs", "playground/**/*", "src/**/*.d.ts"],
   "exclude": [
     "site-dist",
-    ".aprint",
-    ".aprint-test",
+    ".astroprint",
+    ".astroprint-test",
     "public"
   ],
   "compilerOptions": {

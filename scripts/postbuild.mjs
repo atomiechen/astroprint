@@ -12,7 +12,7 @@ const copy = (from, to) => {
   cpSync(toUrl(from), toUrl(to), { recursive: true });
 };
 
-for (const assetPath of packageJson.aprint?.assets ?? []) {
+for (const assetPath of packageJson.astroprint?.assets ?? []) {
   copy(`src/${assetPath}`, `dist/${assetPath}`);
 }
 

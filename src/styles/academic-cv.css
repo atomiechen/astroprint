@@ -1,18 +1,18 @@
 :root {
-  --aprint-page-width: 210mm;
-  --aprint-page-height: 297mm;
-  --aprint-page-margin-top: 20mm;
-  --aprint-page-margin-x: 16mm;
-  --aprint-page-margin-bottom: 20mm;
-  --aprint-ink: black;
-  --aprint-link: #9a3947;
-  --aprint-font-size: 10.5pt;
-  --aprint-small-size: 9.5pt;
-  --aprint-heading-size: 12pt;
-  --aprint-title-size: 18pt;
-  --aprint-line-height: 1.42;
-  --aprint-serif-font: "Times New Roman", Times, "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
-  --aprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+  --astroprint-page-width: 210mm;
+  --astroprint-page-height: 297mm;
+  --astroprint-page-margin-top: 20mm;
+  --astroprint-page-margin-x: 16mm;
+  --astroprint-page-margin-bottom: 20mm;
+  --astroprint-ink: black;
+  --astroprint-link: #9a3947;
+  --astroprint-font-size: 10.5pt;
+  --astroprint-small-size: 9.5pt;
+  --astroprint-heading-size: 12pt;
+  --astroprint-title-size: 18pt;
+  --astroprint-line-height: 1.42;
+  --astroprint-serif-font: "Times New Roman", Times, "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+  --astroprint-cjk-font: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
 }
 
 @page {
@@ -27,30 +27,30 @@
   }
 }
 
-.aprint-document a,
-.aprint-document a:hover {
-  color: var(--aprint-link);
+.astroprint-document a,
+.astroprint-document a:hover {
+  color: var(--astroprint-link);
   text-decoration: none;
 }
 
-.aprint-title {
+.astroprint-title {
   margin: 0;
   padding-top: 15px;
   padding-bottom: 15px;
   font-family: inherit;
-  font-size: var(--aprint-title-size);
+  font-size: var(--astroprint-title-size);
   font-weight: 600;
   letter-spacing: 0;
   break-inside: avoid;
 }
 
-.aprint-title-secondary {
+.astroprint-title-secondary {
   display: inline;
   margin-left: 0.5em;
-  font-family: var(--aprint-cjk-font);
+  font-family: var(--astroprint-cjk-font);
 }
 
-.aprint-meta {
+.astroprint-meta {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 42pt;
@@ -59,13 +59,13 @@
   line-height: 1.3;
 }
 
-.aprint-document h2 {
+.astroprint-document h2 {
   display: grid;
   width: 100%;
   margin-top: 20pt;
   margin-bottom: 7px;
   font-family: Helvetica, Arial, sans-serif;
-  font-size: var(--aprint-heading-size);
+  font-size: var(--astroprint-heading-size);
   font-weight: 700;
   letter-spacing: 0;
   line-height: 1.2;
@@ -74,16 +74,16 @@
   page-break-after: avoid;
 }
 
-.aprint-document h2 + * {
+.astroprint-document h2 + * {
   break-before: avoid-page;
   page-break-before: avoid;
 }
 
-.aprint-document h2::after {
+.astroprint-document h2::after {
   display: block;
   width: 100%;
   height: 1px;
-  background: var(--aprint-ink);
+  background: var(--astroprint-ink);
   content: "";
   transform: scaleY(0.8);
   transform-origin: top;
@@ -106,44 +106,44 @@
   text-align: right;
 }
 
-.aprint-system-details {
+.astroprint-system-details {
   display: grid;
   gap: 2px;
   margin-top: 3px;
 }
 
-.aprint-document ul:not(.two-col) {
+.astroprint-document ul:not(.two-col) {
   margin: 0;
   padding-left: 12pt;
 }
 
-.aprint-document li {
+.astroprint-document li {
   margin-top: 7px;
   break-inside: avoid;
 }
 
-.aprint-document ul ul > li {
+.astroprint-document ul ul > li {
   margin-top: 0;
 }
 
-.aprint-highlight {
+.astroprint-highlight {
   margin: 0;
   padding-left: 7pt;
-  font-size: var(--aprint-small-size);
+  font-size: var(--astroprint-small-size);
   font-style: italic;
   text-decoration: underline;
 }
 
-.aprint-small {
-  font-size: var(--aprint-small-size);
+.astroprint-small {
+  font-size: var(--astroprint-small-size);
 }
 
-.aprint-document p {
+.astroprint-document p {
   margin: 0;
 }
 
 @media screen and (max-width: 680px) {
-  .aprint-meta {
+  .astroprint-meta {
     grid-template-columns: 1fr;
     gap: 6px;
   }

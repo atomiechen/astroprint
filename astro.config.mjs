@@ -1,12 +1,12 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import aprint from "./src";
+import astroprint from "./src";
 
 export default defineConfig({
   srcDir: "playground",
   outDir: "site-dist",
   integrations: [
-    aprint({
+    astroprint({
       routes: [
         {
           collection: "cv",
@@ -31,7 +31,7 @@ export default defineConfig({
   vite: {
     server: {
       watch: {
-        ignored: ["**/.aprint*/**"],
+        ignored: ["**/.astroprint*/**"],
       }
     }
   },

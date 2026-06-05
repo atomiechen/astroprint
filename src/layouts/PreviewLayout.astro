@@ -24,23 +24,23 @@ const {
     });
   </script>
 
-  <div class="aprint-scope aprint-layout">
-    <nav class="aprint-nav" aria-label="Document navigation">
-      <a class="aprint-wordmark" href="/">Home</a>
-      <div class="aprint-nav-links">
-        {printPreview && <span class="aprint-preview-status" aria-live="polite">Paginating...</span>}
+  <div class="astroprint-scope astroprint-layout">
+    <nav class="astroprint-nav" aria-label="Document navigation">
+      <a class="astroprint-wordmark" href="/">Home</a>
+      <div class="astroprint-nav-links">
+        {printPreview && <span class="astroprint-preview-status" aria-live="polite">Paginating...</span>}
         {printPreview ? <a href={normalHref}>Normal View</a> : <a href={previewHref}>Paged Preview</a>}
-        <button class="aprint-nav-button" type="button" data-print-button>Print</button>
+        <button class="astroprint-nav-button" type="button" data-print-button>Print</button>
       </div>
     </nav>
 
     {
       printPreview ? (
         <PrintPreview
-          documentSelector=".aprint-document"
+          documentSelector=".astroprint-document"
           styleSelector="style:not([data-preview-ignore])"
-          statusSelector=".aprint-preview-status"
-          readyEvent="aprint-print-preview:ready"
+          statusSelector=".astroprint-preview-status"
+          readyEvent="astroprint-print-preview:ready"
         >
           <slot />
         </PrintPreview>
@@ -51,7 +51,7 @@ const {
   </div>
 
   <style is:inline data-preview-ignore>
-    .aprint-nav {
+    .astroprint-nav {
       position: sticky;
       top: 0;
       z-index: 20;
@@ -59,10 +59,10 @@ const {
       justify-content: space-between;
       gap: 16px;
       align-items: center;
-      width: var(--aprint-document-width);
-      height: var(--aprint-nav-height);
-      margin: 0 auto calc(-1 * var(--aprint-nav-height));
-      padding: 10px var(--aprint-page-margin-x);
+      width: var(--astroprint-document-width);
+      height: var(--astroprint-nav-height);
+      margin: 0 auto calc(-1 * var(--astroprint-nav-height));
+      padding: 10px var(--astroprint-page-margin-x);
       background: #ffffffeb;
       backdrop-filter: blur(10px);
       color: #64615d;
@@ -70,25 +70,25 @@ const {
       white-space: nowrap;
     }
 
-    .aprint-wordmark {
+    .astroprint-wordmark {
       color: #181716;
       font-size: 1rem;
       font-weight: 600;
       text-decoration: none;
     }
 
-    .aprint-nav-links {
+    .astroprint-nav-links {
       display: flex;
       gap: 16px;
       align-items: center;
     }
 
-    .aprint-nav-links a {
+    .astroprint-nav-links a {
       color: inherit;
       text-decoration: none;
     }
 
-    .aprint-nav-button {
+    .astroprint-nav-button {
       appearance: none;
       border: 0;
       padding: 0;
@@ -98,7 +98,7 @@ const {
       cursor: pointer;
     }
 
-    .aprint-preview-status {
+    .astroprint-preview-status {
       color: #64615d;
       font-size: 0.82rem;
     }
@@ -109,7 +109,7 @@ const {
         background: white;
       }
 
-      .aprint-nav {
+      .astroprint-nav {
         display: none;
       }
     }

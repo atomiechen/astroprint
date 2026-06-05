@@ -49,8 +49,8 @@ export type FormatPublicationsOptions = {
 };
 
 const cslTemplates = {
-  apa: "aprint-apa",
-  ieee: "aprint-ieee",
+  apa: "astroprint-apa",
+  ieee: "astroprint-ieee",
 } satisfies Record<Exclude<PublicationStyle, "acm">, string>;
 
 let cslStylesRegistered = false;

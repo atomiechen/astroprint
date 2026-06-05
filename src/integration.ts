@@ -5,11 +5,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import remarkDirective from "remark-directive";
 
 import { remarkBibtex, type RemarkBibtexOptions } from "./lib/remark-bibtex.js";
-import { remarkAprintDirectives, type AprintDirectiveOptions } from "./lib/remark-aprint-directives.js";
+import { remarkAstroPrintDirectives, type AstroPrintDirectiveOptions } from "./lib/remark-astroprint-directives.js";
 import { remarkLogoLinkDirectives } from "./lib/remark-logo-link-directives.js";
 import { remarkStripHtmlComments } from "./lib/remark-strip-html-comments.js";
 
-export type AprintPdfConfig = {
+export type AstroPrintPdfConfig = {
   route: string;
   document?: string;
   output?: string;
@@ -17,7 +17,7 @@ export type AprintPdfConfig = {
   backend?: "weasyprint" | "playwright";
 };
 
-export type AprintRouteConfig = {
+export type AstroPrintRouteConfig = {
   collection: string;
   layout?: string;
   route?: string;
@@ -26,9 +26,9 @@ export type AprintRouteConfig = {
   injectDuringBuild?: boolean;
 };
 
-export type AprintAstroOptions = AprintDirectiveOptions & {
-  routes?: AprintRouteConfig[];
-  pdf?: AprintPdfConfig;
+export type AstroPrintAstroOptions = AstroPrintDirectiveOptions & {
+  routes?: AstroPrintRouteConfig[];
+  pdf?: AstroPrintPdfConfig;
   bibtex?: boolean | RemarkBibtexOptions;
   stripHtmlComments?: boolean;
 };
@@ -59,14 +59,14 @@ const resolveLayoutImportSpecifier = ({
   return toImportPath(relative(importerDir, fileURLToPath(layoutUrl)));
 };
 
-export default function aprint(options: AprintAstroOptions = {}): AstroIntegration {
+export default function astroprint(options: AstroPrintAstroOptions = {}): AstroIntegration {
   const routes = options.routes ?? [];
   const pdf = options.pdf;
   const bibtex = options.bibtex ?? true;
   const stripHtmlComments = options.stripHtmlComments !== false;
 
   return {
-    name: "aprint",
+    name: "astroprint",
     hooks: {
       "astro:config:setup": ({ config, command, updateConfig, injectRoute, createCodegenDir }) => {
         updateConfig({
@@ -76,14 +76,14 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
               remarkDirective,
               remarkLogoLinkDirectives,
               ...(bibtex ? [[remarkBibtex, typeof bibtex === "object" ? bibtex : {}]] : []),
-              [remarkAprintDirectives, { directives: options.directives } satisfies AprintDirectiveOptions],
+              [remarkAstroPrintDirectives, { directives: options.directives } satisfies AstroPrintDirectiveOptions],
               ...(stripHtmlComments ? [remarkStripHtmlComments] : []),
             ],
           },
         });
 
         const codegenDir = createCodegenDir();
-        const isPdfRenderBuild = process.env.APRINT_RENDER_HTML === "true";
+        const isPdfRenderBuild = process.env.ASTROPRINT_RENDER_HTML === "true";
 
         for (const [index, routeConfig] of routes.entries()) {
           const shouldInjectRoute =
@@ -91,7 +91,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
 
           if (shouldInjectRoute) {
             const name = `route-${index}`;
-            const route = normalizeRoute(routeConfig.route ?? `/aprint/${routeConfig.collection}`);
+            const route = normalizeRoute(routeConfig.route ?? `/astroprint/${routeConfig.collection}`);
             const defaultPreviewRoute = route === "/" ? "/preview" : `${route}-preview`;
             const previewRoute = normalizeRoute(routeConfig.previewRoute ?? defaultPreviewRoute);
             const generatedConfig = JSON.stringify({
@@ -101,7 +101,7 @@ export default function aprint(options: AprintAstroOptions = {}): AstroIntegrati
               previewRoute,
             });
             const collection = routeConfig.collection;
-            const layout = routeConfig.layout ?? "aprint/layouts/AcademicLayout.astro";
+            const layout = routeConfig.layout ?? "astroprint/layouts/AcademicLayout.astro";
             const defaultId = routeConfig.defaultId ?? "main";
             const configFile = new URL(`${name}.json`, codegenDir);
             const normalEntrypoint = new URL(`${name}.astro`, codegenDir);

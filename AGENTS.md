@@ -2,13 +2,13 @@
 
 ## Project Overview
 
-`aprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
+`astroprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
 
-Calling `aprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
+Calling `astroprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
 
-Route injection should be decided before calling `injectRoute`, not inside generated route `getStaticPaths()`. Generated routes should assume they are meant to render once injected. In `astro dev`, always inject configured routes. In PDF render builds, `APRINT_RENDER_HTML=true` must force route injection regardless of route flags so `aprint pdf` can reach configured routes. In normal `astro build`, each route's `injectDuringBuild` flag controls injection; it defaults to `true`, and `false` keeps that route out of the production build graph to avoid preview-only client chunks such as `PrintPreview.astro` unless the user opted in.
+Route injection should be decided before calling `injectRoute`, not inside generated route `getStaticPaths()`. Generated routes should assume they are meant to render once injected. In `astro dev`, always inject configured routes. In PDF render builds, `ASTROPRINT_RENDER_HTML=true` must force route injection regardless of route flags so `astroprint pdf` can reach configured routes. In normal `astro build`, each route's `injectDuringBuild` flag controls injection; it defaults to `true`, and `false` keeps that route out of the production build graph to avoid preview-only client chunks such as `PrintPreview.astro` unless the user opted in.
 
-When a route config omits `route`, the default route is `/aprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
+When a route config omits `route`, the default route is `/astroprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
 
 The package code lives in `src/`. Built-in Astro surfaces live directly under top-level source folders:
 
@@ -25,7 +25,7 @@ The playground content lives under `playground/` and is useful for local validat
 
 ## Markdown Directives
 
-`remark-directive` is installed by the integration. `remarkAprintDirectives` should keep directives generic: known list aliases map to semantic tags (`ul`, `ol`, `li`, `entry`), unknown text directives default to `span`, and unknown leaf/container directives default to `div`. All directives get a default `aprint-{name}` class unless the caller overrides that directive with `directives`.
+`remark-directive` is installed by the integration. `remarkAstroPrintDirectives` should keep directives generic: known list aliases map to semantic tags (`ul`, `ol`, `li`, `entry`), unknown text directives default to `span`, and unknown leaf/container directives default to `div`. All directives get a default `astroprint-{name}` class unless the caller overrides that directive with `directives`.
 
 Directive attributes should pass through to rendered HTML properties. Prefer standard directive attribute syntax for classes:
 
@@ -60,10 +60,10 @@ HTML comment removal is handled separately by `src/lib/remark-strip-html-comment
 For validating injected document routes in a static build, run:
 
 ```bash
-APRINT_RENDER_HTML=true pnpm exec astro build --outDir .aprint-check
+ASTROPRINT_RENDER_HTML=true pnpm exec astro build --outDir .astroprint-check
 ```
 
-Remove generated validation output afterward. Do not edit `.astro/`, `.aprint/`, `.aprint-check/`, `dist/`, `site-dist/`, or `public/` as source files.
+Remove generated validation output afterward. Do not edit `.astro/`, `.astroprint/`, `.astroprint-check/`, `dist/`, `site-dist/`, or `public/` as source files.
 
 `pnpm vendor:pagedjs` downloads `pagedjs@0.4.3/dist/paged.esm.js` from unpkg and minifies it to `src/vendor/pagedjs-0.4.3.esm.min.js` with esbuild. Keep the version in the filename, the fetch URL, and `PrintPreview.astro`'s URL import in sync when upgrading Paged.js. The minified bundle keeps upstream legal comments; do not replace it with `paged.min.js` because that file is not the ESM named-export bundle loaded by `PrintPreview.astro`.
 
@@ -75,19 +75,19 @@ It wraps slotted document content, feeds selected page styles to Paged.js, and r
 
 `PrintPreview.astro` imports the vendored Paged.js ESM bundle from `src/vendor/` as a URL asset, then dynamically imports that URL at runtime. This keeps the component usable without requiring consuming projects to install `pagedjs` or configure Vite `optimizeDeps`, while avoiding a large preview-runtime chunk warning during production builds.
 
-After Paged.js finishes paginating, `PrintPreview.astro` inserts a browser-print `@page` style with concrete page size and margin values resolved from the source document. Paged.js injects `@page { margin: 0 }` rules for its screen preview, so the aprint print rule must be inserted after pagination. Keep this in sync with the Paged.js preview stylesheet so browser printing from preview routes matches normal document printing.
+After Paged.js finishes paginating, `PrintPreview.astro` inserts a browser-print `@page` style with concrete page size and margin values resolved from the source document. Paged.js injects `@page { margin: 0 }` rules for its screen preview, so the astroprint print rule must be inserted after pagination. Keep this in sync with the Paged.js preview stylesheet so browser printing from preview routes matches normal document printing.
 
 The component script initializes all `.print-preview-source` instances because Astro may emit the component script once per page even when the component appears multiple times.
 
 Callers must define page variables on the document or `:root`:
 
-- `--aprint-page-width`
-- `--aprint-page-height`
-- `--aprint-page-margin-top`
-- `--aprint-page-margin-x`
-- `--aprint-page-margin-bottom`
+- `--astroprint-page-width`
+- `--astroprint-page-height`
+- `--astroprint-page-margin-top`
+- `--astroprint-page-margin-x`
+- `--astroprint-page-margin-bottom`
 
-`--aprint-print-preview-top-offset` is optional.
+`--astroprint-print-preview-top-offset` is optional.
 
 Paged.js receives all linked stylesheets plus inline styles matched by `styleSelector`, after PrintPreview's internal `data-print-preview-ignore` style is removed. Caller-owned preview chrome styles should be kept in a top-level `<style is:inline data-preview-ignore>` block and excluded with `styleSelector="style:not([data-preview-ignore])"`.
 
@@ -107,17 +107,17 @@ Keep document styles and preview chrome styles separate:
 
 - `base.css` should define baseline variables and neutral document root behavior that every theme can inherit or override.
 - `academic-cv.css` should override baseline variables and style document content for the built-in academic theme.
-- `Document.astro` should own only the theme-neutral document root and may import `base.css`; do not import theme CSS from it. Aprint-owned root elements should use the `aprint-scope` class so `base.css` can apply scoped reset styles without touching host-page chrome.
+- `Document.astro` should own only the theme-neutral document root and may import `base.css`; do not import theme CSS from it. AstroPrint-owned root elements should use the `astroprint-scope` class so `base.css` can apply scoped reset styles without touching host-page chrome.
 - `BaseLayout.astro` should own only the HTML shell, optional `pageTitle`, and global page/body baseline.
 - `PreviewLayout.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, and caller-owned preview chrome styles.
 - `AcademicLayout.astro` should own the built-in academic title markup and frontmatter/entry mapping. It defaults to `BaseLayout.astro` for standalone Markdown and uses `PreviewLayout.astro` when generated routes pass `preview={true}`.
-- `PrintPreview.astro` should remain document-agnostic and should not depend on `.aprint-document` beyond what callers pass through `documentSelector`. Layouts that render their own document root without `Document.astro` should import `base.css` or define equivalent page variables and `@page` rules.
+- `PrintPreview.astro` should remain document-agnostic and should not depend on `.astroprint-document` beyond what callers pass through `documentSelector`. Layouts that render their own document root without `Document.astro` should import `base.css` or define equivalent page variables and `@page` rules.
 
 Standalone Markdown pages can opt into the built-in academic document surface with:
 
 ```md
 ---
-layout: aprint/layouts/AcademicLayout.astro
+layout: astroprint/layouts/AcademicLayout.astro
 ---
 ```
 

@@ -31,9 +31,9 @@ const Layout = preview ? PreviewLayout : BaseLayout;
 
 <Layout {...Astro.props} pageTitle={title}>
   <Document>
-    <h1 id="aprint-title" class="aprint-title">
+    <h1 id="astroprint-title" class="astroprint-title">
       <span>{title}</span>
-      {secondaryTitle && <span class="aprint-title-secondary">{secondaryTitle}</span>}
+      {secondaryTitle && <span class="astroprint-title-secondary">{secondaryTitle}</span>}
     </h1>
     <slot />
   </Document>

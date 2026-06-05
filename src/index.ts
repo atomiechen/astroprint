@@ -1,7 +1,7 @@
 export { default } from "./integration.js";
 export { formatBibtexPublication, formatBibtexPublications } from "./lib/bib.js";
 export { generatePdf } from "./pdf.js";
-export { defaultDirectives, remarkAprintDirectives } from "./lib/remark-aprint-directives.js";
+export { defaultDirectives, remarkAstroPrintDirectives } from "./lib/remark-astroprint-directives.js";
 export { remarkBibtex } from "./lib/remark-bibtex.js";
 export { remarkLogoLinkDirectives } from "./lib/remark-logo-link-directives.js";
 export { remarkStripHtmlComments } from "./lib/remark-strip-html-comments.js";
@@ -12,13 +12,13 @@ export type {
 } from "./lib/bib.js";
 export type { RemarkBibtexOptions } from "./lib/remark-bibtex.js";
 export type {
-  AprintDirectiveDefinition,
-  AprintDirectiveOptions,
-} from "./lib/remark-aprint-directives.js";
+  AstroPrintDirectiveDefinition,
+  AstroPrintDirectiveOptions,
+} from "./lib/remark-astroprint-directives.js";
 export type {
-  AprintAstroOptions,
-  AprintPdfConfig,
-  AprintRouteConfig,
+  AstroPrintAstroOptions,
+  AstroPrintPdfConfig,
+  AstroPrintRouteConfig,
 } from "./integration.js";
 export type {
   GeneratePdfOptions,

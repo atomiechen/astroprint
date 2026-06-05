@@ -1,7 +1,7 @@
 node_modules
 .astro
 dist
-.aprint*
+.astroprint*
 site-dist
 public
 .DS_Store

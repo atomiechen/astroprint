@@ -21,7 +21,7 @@ const parsePort = (port: string | undefined) => {
 };
 
 program
-  .name("aprint")
+  .name("astroprint")
   .description("Astro-powered Markdown documents with paged preview and PDF export.")
   .version("0.1.0");
 

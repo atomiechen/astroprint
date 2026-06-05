@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises";
 import { createServer } from "node:http";
 import { basename, dirname, extname, isAbsolute, join, resolve } from "node:path";
 
-import { loadAprintManifest } from "./config.js";
+import { loadAstroPrintManifest } from "./config.js";
 import { run, runLocalBin } from "./run.js";
 
 export type PdfBackend = "weasyprint" | "playwright";
@@ -148,18 +148,18 @@ export const generatePdf = async ({
   port,
   onInfo,
 }: GeneratePdfOptions = {}) => {
-  const distDir = resolve(root, ".aprint");
+  const distDir = resolve(root, ".astroprint");
   let server: ReturnType<typeof createServer> | undefined;
 
   try {
     await runLocalBin("astro", ["build", "--outDir", distDir], {
       cwd: root,
       env: {
-        APRINT_RENDER_HTML: "true",
+        ASTROPRINT_RENDER_HTML: "true",
       },
     });
 
-    const config = await loadAprintManifest(root);
+    const config = await loadAstroPrintManifest(root);
     const pdfConfig = config.pdf;
     const routeSource = routeOption ?? pdfConfig?.route;
     const documentSource = documentOption ?? pdfConfig?.document;
@@ -167,7 +167,7 @@ export const generatePdf = async ({
       throw new Error(
         [
           "No PDF route was provided.",
-          "Use `aprint pdf --route /your-page/`, or configure `pdf: { route: \"/your-page/\" }` in the aprint integration.",
+          "Use `astroprint pdf --route /your-page/`, or configure `pdf: { route: \"/your-page/\" }` in the astroprint integration.",
         ].join("\n"),
       );
     }

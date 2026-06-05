@@ -1,16 +1,16 @@
 {
-  "name": "aprint",
+  "name": "astroprint",
   "version": "0.1.0",
   "description": "Astro integration for print-ready, Markdown-first documents with paged preview and PDF export.",
   "author": "Atomie CHEN <atomic_cwh@163.com>",
   "license": "MIT",
-  "homepage": "https://github.com/atomiechen/aprint#readme",
+  "homepage": "https://github.com/atomiechen/astroprint#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/atomiechen/aprint.git"
+    "url": "https://github.com/atomiechen/astroprint.git"
   },
   "bugs": {
-    "url": "https://github.com/atomiechen/aprint/issues"
+    "url": "https://github.com/atomiechen/astroprint/issues"
   },
   "keywords": [
     "withastro",
@@ -52,12 +52,12 @@
     }
   },
   "bin": {
-    "aprint": "./dist/cli.js"
+    "astroprint": "./dist/cli.js"
   },
   "files": [
     "dist"
   ],
-  "aprint": {
+  "astroprint": {
     "assets": [
       "components",
       "layouts",
