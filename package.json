@@ -67,8 +67,7 @@
     ]
   },
   "scripts": {
-    "clean": "node -e \"fs.rmSync('dist', { force: true, recursive: true })\"",
-    "prebuild": "node scripts/sync-version.mjs && pnpm check && pnpm clean",
+    "prebuild": "node scripts/prebuild.mjs && pnpm check",
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "node scripts/postbuild.mjs",
     "dev": "astro dev",
