@@ -20,7 +20,7 @@ The package code lives in `src/`. Built-in Astro surfaces live directly under to
 - `src/components/AcademicDocument.astro` is the built-in academic document surface. It imports the academic CV theme, renders academic title markup, and wraps slotted content in `Document.astro`.
 - `src/components/PreviewShell.astro` is the theme-neutral generated-route shell with navigation, print button, preview status, scroll restoration, and normal/Paged.js preview branching.
 - `src/layouts/BaseLayout.astro` is the minimal HTML shell with `<html>`, `<head>`, viewport metadata, optional `pageTitle`, and global page/body baseline.
-- `src/layouts/AcademicLayout.astro` is the built-in academic layout. It maps frontmatter/entry fields and switches between plain `AcademicDocument.astro` and `PreviewShell.astro + AcademicDocument.astro` with its `withRouteShell` prop.
+- `src/layouts/AcademicLayout.astro` is the built-in academic layout. It maps frontmatter/entry fields and switches between plain `AcademicDocument.astro` and `PreviewShell.astro + AcademicDocument.astro` with its `withPreviewShell` prop.
 - `src/components/PrintPreview.astro` is the document-agnostic Paged.js preview wrapper.
 - `src/styles/base.css` defines the required baseline page, typography, and preview CSS variables plus neutral document root styles.
 - `src/styles/academic-cv.css` is the built-in academic CV document theme.
@@ -116,7 +116,7 @@ Keep document styles and preview chrome styles separate:
 - `BaseLayout.astro` should own only the HTML shell, optional `pageTitle`, and global page/body baseline.
 - `AcademicDocument.astro` should own the built-in academic title markup and academic theme import.
 - `PreviewShell.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, scroll restoration, and caller-owned preview chrome styles.
-- `AcademicLayout.astro` should own frontmatter/entry mapping and compose `AcademicDocument.astro` with `PreviewShell.astro` when generated routes pass `withRouteShell={true}`.
+- `AcademicLayout.astro` should own frontmatter/entry mapping and compose `AcademicDocument.astro` with `PreviewShell.astro` when generated routes pass `withPreviewShell={true}` or standalone Markdown frontmatter sets `withPreviewShell: true`. It should read document titles from `entry.data` or `frontmatter`, not separate root-level title props.
 - `PrintPreview.astro` should remain document-agnostic and should not depend on `.astroprint-document` beyond what callers pass through `documentSelector`. Layouts that render their own document root without `Document.astro` should import `base.css` or define equivalent page variables and `@page` rules.
 
 Standalone Markdown pages can opt into the built-in academic document surface with:
@@ -124,6 +124,9 @@ Standalone Markdown pages can opt into the built-in academic document surface wi
 ```md
 ---
 layout: astroprint/layouts/AcademicLayout.astro
+title: CV Notes
+secondaryTitle: Draft
+withPreviewShell: true
 ---
 ```
 

@@ -18,9 +18,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Route configs now require an explicit `route`; astroprint no longer injects a default `/astroprint/{collection}` route.
 - Renamed the integration route-injection option from `routes` to `injectedRoutes`.
 - Paged preview routes are now opt-in. Set `previewRoute: true` for the default preview path or pass a custom preview route string.
-- Generated routes now pass `withRouteShell={true}` to layouts.
+- Generated routes now pass `withPreviewShell={true}` to layouts.
 - Removed `PreviewLayout.astro`; use `PreviewShell.astro` inside a layout instead.
-- `AcademicLayout.astro` now composes `AcademicDocument.astro`.
+- `AcademicLayout.astro` now composes `AcademicDocument.astro`, reads titles only from collection entry data or Markdown frontmatter, and supports `withPreviewShell` from standalone Markdown frontmatter.
 
 
 ## [0.1.1] - 2026-06-06

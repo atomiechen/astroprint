@@ -2,7 +2,7 @@
 import PrintPreview from "./PrintPreview.astro";
 
 interface Props {
-  normalHref: string;
+  normalHref?: string;
   previewHref?: string;
   printPreview?: boolean;
 }
@@ -44,7 +44,11 @@ const {
     <a class="astroprint-wordmark" href="/">Home</a>
     <div class="astroprint-nav-links">
       {printPreview && <span class="astroprint-preview-status" aria-live="polite">Paginating...</span>}
-      {printPreview ? <a href={normalHref}>Normal View</a> : previewHref && <a href={previewHref}>Paged Preview</a>}
+      {
+        printPreview
+          ? normalHref && <a href={normalHref}>Normal View</a>
+          : previewHref && <a href={previewHref}>Paged Preview</a>
+      }
       <button class="astroprint-nav-button" type="button" data-print-button>Print</button>
     </div>
   </nav>

@@ -5,9 +5,7 @@ import BaseLayout from "./BaseLayout.astro";
 import PreviewShell from "../components/PreviewShell.astro";
 
 type Props = ComponentProps<typeof PreviewShell> & {
-  withRouteShell?: boolean;
-  title?: string;
-  secondaryTitle?: string;
+  withPreviewShell?: boolean;
   frontmatter?: Record<string, unknown>;
   entry?: {
     id?: string;
@@ -15,21 +13,22 @@ type Props = ComponentProps<typeof PreviewShell> & {
   };
 };
 
-const { entry, frontmatter, withRouteShell = false } = Astro.props;
+const { entry, frontmatter } = Astro.props;
+const withPreviewShell =
+  Astro.props.withPreviewShell ??
+  (typeof frontmatter?.withPreviewShell === "boolean" ? frontmatter.withPreviewShell : false);
 const title =
-  Astro.props.title ??
   (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
   (typeof frontmatter?.title === "string" ? frontmatter.title : undefined) ??
   entry?.id;
 const secondaryTitle =
-  Astro.props.secondaryTitle ??
   (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined) ??
   (typeof frontmatter?.secondaryTitle === "string" ? frontmatter.secondaryTitle : undefined);
 ---
 
 <BaseLayout pageTitle={title}>
   {
-    withRouteShell ? (
+    withPreviewShell ? (
       <PreviewShell {...Astro.props}>
         <AcademicDocument title={title} secondaryTitle={secondaryTitle}>
           <slot />

@@ -310,7 +310,7 @@ const previewHref = previewRoute ? \`\${previewRoute}\${suffix}\` : undefined;
 ---
 
 <RouteLayout
-  withRouteShell={true}
+  withPreviewShell={true}
   normalHref={normalHref}
   previewHref={previewHref}
   printPreview={printPreview}
@@ -358,7 +358,7 @@ const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
 ---
 
 <RouteLayout
-  withRouteShell={true}
+  withPreviewShell={true}
   normalHref={normalHref}
   previewHref={previewHref}
   printPreview={printPreview}
@@ -397,7 +397,7 @@ const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
 ---
 
 <RouteLayout
-  withRouteShell={true}
+  withPreviewShell={true}
   normalHref={normalHref}
   previewHref={previewHref}
   printPreview={printPreview}
