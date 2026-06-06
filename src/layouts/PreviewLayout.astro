@@ -19,9 +19,28 @@ const {
 
 <BaseLayout pageTitle={pageTitle}>
   <script>
+    // print page
     document.querySelector("[data-print-button]")?.addEventListener("click", () => {
       window.print();
     });
+
+    // restore scroll position
+    const scrollKey = `astroprint-scroll:${window.location.pathname}`;
+    const restoreScroll = () => {
+      const savedY = Number(sessionStorage.getItem(scrollKey));
+      if (Number.isFinite(savedY) && savedY > 0) {
+        requestAnimationFrame(() => window.scrollTo(0, savedY));
+      }
+    };
+    const saveScroll = () => {
+      sessionStorage.setItem(scrollKey, String(Math.round(window.scrollY)));
+    };
+
+    window.history.scrollRestoration = "manual";
+    window.addEventListener("scroll", saveScroll, { passive: true });
+    window.addEventListener("pagehide", saveScroll);
+    window.addEventListener("pageshow", restoreScroll);
+    window.addEventListener("astroprint-print-preview:ready", restoreScroll);
   </script>
 
   <div class="astroprint-scope astroprint-layout">
