@@ -1,12 +1,11 @@
 ---
 import type { ComponentProps } from "astro/types";
-import Document from "../components/Document.astro";
+import AcademicDocument from "../components/AcademicDocument.astro";
 import BaseLayout from "./BaseLayout.astro";
-import PreviewLayout from "./PreviewLayout.astro";
-import "../styles/academic-cv.css";
+import PreviewShell from "../components/PreviewShell.astro";
 
-type Props = ComponentProps<typeof PreviewLayout> & {
-  preview?: boolean;
+type Props = ComponentProps<typeof PreviewShell> & {
+  withRouteShell?: boolean;
   title?: string;
   secondaryTitle?: string;
   frontmatter?: Record<string, unknown>;
@@ -16,7 +15,7 @@ type Props = ComponentProps<typeof PreviewLayout> & {
   };
 };
 
-const { entry, frontmatter, preview = false } = Astro.props;
+const { entry, frontmatter, withRouteShell = false } = Astro.props;
 const title =
   Astro.props.title ??
   (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
@@ -26,15 +25,20 @@ const secondaryTitle =
   Astro.props.secondaryTitle ??
   (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined) ??
   (typeof frontmatter?.secondaryTitle === "string" ? frontmatter.secondaryTitle : undefined);
-const Layout = preview ? PreviewLayout : BaseLayout;
 ---
 
-<Layout {...Astro.props} pageTitle={title}>
-  <Document>
-    <h1 id="astroprint-title" class="astroprint-title">
-      <span>{title}</span>
-      {secondaryTitle && <span class="astroprint-title-secondary">{secondaryTitle}</span>}
-    </h1>
-    <slot />
-  </Document>
-</Layout>
+<BaseLayout pageTitle={title}>
+  {
+    withRouteShell ? (
+      <PreviewShell {...Astro.props}>
+        <AcademicDocument title={title} secondaryTitle={secondaryTitle}>
+          <slot />
+        </AcademicDocument>
+      </PreviewShell>
+    ) : (
+      <AcademicDocument title={title} secondaryTitle={secondaryTitle}>
+        <slot />
+      </AcademicDocument>
+    )
+  }
+</BaseLayout>

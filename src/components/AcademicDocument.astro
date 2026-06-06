@@ -1,0 +1,19 @@
+---
+import Document from "./Document.astro";
+import "../styles/academic-cv.css";
+
+interface Props {
+  title?: string;
+  secondaryTitle?: string;
+}
+
+const { title, secondaryTitle } = Astro.props;
+---
+
+<Document>
+  <h1 id="astroprint-title" class="astroprint-title">
+    <span>{title}</span>
+    {secondaryTitle && <span class="astroprint-title-secondary">{secondaryTitle}</span>}
+  </h1>
+  <slot />
+</Document>

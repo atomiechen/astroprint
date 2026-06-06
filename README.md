@@ -7,7 +7,7 @@
 
 Print-ready Markdown documents for [Astro](https://astro.build/), with normal web preview, Paged.js preview, and PDF export.
 
-Use `astroprint` for CVs, reports, notes, and other Markdown-first documents that should stay editable as Astro pages while still exporting clean PDFs. It uses Astro's content, layout, asset, and dev-server behavior, then adds print-oriented Markdown transforms, optional document routes, paged preview, and a PDF CLI.
+Use `astroprint` for CVs, reports, notes, and other Markdown-first documents that should stay editable as Astro pages while still exporting clean PDFs. It uses Astro's content, layout, asset, and dev-server behavior, then adds print-oriented Markdown transforms, optional injected document routes, paged preview, and a PDF CLI.
 
 ## Quick Start
 
@@ -37,7 +37,7 @@ export default defineConfig({
 
 The integration also excludes astroprint-generated work directories matching `**/.astroprint*/**` from Vite's dev-server watcher.
 
-Add `routes` only when you want `astroprint` to inject collection-backed normal and paged-preview routes. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`:
+Add `injectedRoutes` only when you want `astroprint` to inject collection-backed document routes. Each injected route must provide an explicit `route`; astroprint will not guess a public URL for you. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`:
 
 ```js title="astro.config.mjs"
 // astro.config.mjs
@@ -47,12 +47,12 @@ import print from "astroprint";
 export default defineConfig({
   integrations: [
     print({
-      routes: [
+      injectedRoutes: [
         {
           collection: "cv",
-          layout: "astroprint/layouts/AcademicLayout.astro",
           route: "/astroprint",
-          previewRoute: "/astroprint-preview",
+          // Optional. Set true for /astroprint-preview, or pass a custom path.
+          previewRoute: true,
           defaultId: "main",
           // Optional. Defaults to true for normal astro build.
           injectDuringBuild: false,
@@ -68,7 +68,9 @@ export default defineConfig({
 });
 ```
 
-By default, configured routes are injected during normal `astro build`, so `/astroprint/` and `/astroprint-preview/` can be part of your production site. Set `injectDuringBuild: false` on a route when you only want it during `astro dev` and `astroprint pdf`; the PDF command always enables route injection internally with `ASTROPRINT_RENDER_HTML=true`.
+By default, configured injected routes are emitted during normal `astro build`, so `/astroprint/` can be part of your production site. Set `injectDuringBuild: false` on an injected route when you only want it during `astro dev` and `astroprint pdf`; the PDF command always enables route injection internally with `ASTROPRINT_RENDER_HTML=true`.
+
+Paged preview routes are opt-in. Omit `previewRoute` or set `previewRoute: false` to inject only the normal route. Set `previewRoute: true` to inject the default preview path (`${route}-preview`, or `/preview` for `/`), or pass a string such as `previewRoute: "/astroprint-preview"`.
 
 Define the content collection:
 
@@ -113,7 +115,7 @@ secondaryTitle: Computing Notes
 :::::
 ```
 
-The filename becomes the document id. This example uses `main.md` because the route config above sets `defaultId: "main"`, so it renders at `/astroprint/`. Other ids render at paths such as `/astroprint/example/`, or you can change `defaultId`.
+The filename becomes the document id. This example uses `main.md` because the injected route config above sets `defaultId: "main"`, so it renders at `/astroprint/`. Other ids render at paths such as `/astroprint/example/`, or you can change `defaultId`.
 
 Run Astro for development:
 
@@ -124,7 +126,7 @@ npx astro dev
 Then open:
 
 - `/astroprint/` for the normal document view
-- `/astroprint-preview/` for Paged.js pagination preview
+- `/astroprint-preview/` for Paged.js pagination preview, if `previewRoute` is enabled
 
 Generate the final PDF:
 
@@ -220,18 +222,47 @@ Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { st
 
 ## Custom Layouts
 
-`astroprint` separates document structure from route chrome. `astroprint/components/Document.astro` provides the default document root and baseline page styles. `astroprint/layouts/PreviewLayout.astro` provides the generated route chrome, print button, document `<title>`, and paged-preview branching.
+`astroprint` separates document structure from route shell. Use the smallest component that matches the surface you are building:
 
-When a custom theme wraps `PreviewLayout.astro`, it mainly needs to map collection data into markup and import its own stylesheet:
+```mermaid
+flowchart TD
+  BaseCSS[styles/base.css]
+  AcademicCSS[styles/academic-cv.css]
+
+  Document[Document.astro]
+  AcademicDocument[AcademicDocument.astro]
+  PrintPreview[PrintPreview.astro]
+  PreviewShell[PreviewShell.astro]
+
+  BaseLayout[layouts/BaseLayout.astro]
+  AcademicLayout[layouts/AcademicLayout.astro]
+
+  BaseCSS --> Document
+  Document --> AcademicDocument
+  AcademicCSS --> AcademicDocument
+  PrintPreview --> PreviewShell
+  AcademicDocument --> AcademicLayout
+  PreviewShell --> AcademicLayout
+  BaseLayout --> AcademicLayout
+```
+
+- `Document.astro` provides the default document root and baseline page styles.
+- `AcademicDocument.astro` provides `Document` plus the built-in academic theme and title block.
+- `PrintPreview.astro` provides the document-agnostic Paged.js wrapper.
+- `PreviewShell.astro` provides the normal/preview navigation, print button, scroll restoration, and optional `PrintPreview`.
+- `AcademicLayout.astro` provides the built-in academic document surface and uses `PreviewShell` when generated routes pass `withRouteShell={true}`.
+
+When a custom theme wraps `PreviewShell.astro`, it mainly needs to map collection data into markup and import its own stylesheet:
 
 ```astro title="src/layouts/MyThemedDocumentLayout.astro"
 ---
 import type { ComponentProps } from "astro/types";
 import Document from "astroprint/components/Document.astro";
-import PreviewLayout from "astroprint/layouts/PreviewLayout.astro";
+import PreviewShell from "astroprint/components/PreviewShell.astro";
+import BaseLayout from "./BaseLayout.astro";
 import "./my-document.css";
 
-type Props = ComponentProps<typeof PreviewLayout> & {
+type Props = ComponentProps<typeof PreviewShell> & {
   secondaryTitle?: string;
   entry?: {
     id?: string;
@@ -249,15 +280,17 @@ const secondaryTitle =
   (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined);
 ---
 
-<PreviewLayout {...Astro.props} pageTitle={title}>
-  <Document>
-    <h1 class="my-title">
-      <span>{title}</span>
-      {secondaryTitle && <span>{secondaryTitle}</span>}
-    </h1>
-    <slot />
-  </Document>
-</PreviewLayout>
+<BaseLayout pageTitle={title}>
+  <PreviewShell {...Astro.props}>
+    <Document>
+      <h1 class="my-title">
+        <span>{title}</span>
+        {secondaryTitle && <span>{secondaryTitle}</span>}
+      </h1>
+      <slot />
+    </Document>
+  </PreviewShell>
+</BaseLayout>
 ```
 
 Then point the generated route at that layout:
@@ -269,12 +302,12 @@ import print from "astroprint";
 export default defineConfig({
   integrations: [
     print({
-      routes: [
+      injectedRoutes: [
         {
           collection: "cv",
           layout: "./src/layouts/MyThemedDocumentLayout.astro",
           route: "/astroprint",
-          previewRoute: "/astroprint-preview",
+          previewRoute: true,
         },
       ],
     }),
@@ -282,11 +315,11 @@ export default defineConfig({
 });
 ```
 
-Relative `layout` paths are resolved from your Astro project root. Package specifiers and aliases, such as `astroprint/layouts/PreviewLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite. The generated route passes rendered Markdown as the slot, plus route props such as `normalHref`, `previewHref`, `printPreview`, `entry`, and `documentConfig`.
+Relative `layout` paths are resolved from your Astro project root. Package specifiers and aliases, such as `astroprint/layouts/AcademicLayout.astro` or `@/layouts/MyDocumentLayout.astro`, are passed through to Astro/Vite. The generated route passes rendered Markdown as the slot, plus route props such as `withRouteShell`, `normalHref`, optional `previewHref`, `printPreview`, `entry`, and `documentConfig`.
 
 For a completely custom template, create your own layout and stylesheet, then use the directive classes generated by `astroprint` (`.astroprint-entry`, `.two-col`, and so on), or extend the directive mapping with the integration `directives` option.
 
-For standalone Markdown pages that should use the built-in academic document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout. The academic layout defaults to `BaseLayout.astro`; generated routes pass `preview={true}` to use `PreviewLayout.astro`.
+For standalone Markdown pages that should use the built-in academic document surface without generated document routes, navigation, paged preview, or PDF behavior, set the page frontmatter layout. The academic layout defaults to `BaseLayout.astro`; generated routes pass `withRouteShell={true}` to use `PreviewShell.astro`.
 
 ```md title="src/pages/cv-notes.md"
 ---
@@ -322,13 +355,13 @@ astroprint pdf --route /cv-notes/  # Generate from a regular Astro route
 astroprint pdf --route /cv-notes/ --output-dir public
 ```
 
-The PDF command sets `ASTROPRINT_RENDER_HTML=true` so injected routes are generated for export, regardless of each route's `injectDuringBuild` setting. Without top-level `pdf`, use `--route` to print an existing Astro page; `astroprint` will not guess a default PDF route.
+The PDF command sets `ASTROPRINT_RENDER_HTML=true` so injected normal routes are generated for export, regardless of each injected route's `injectDuringBuild` setting. `previewRoute` remains opt-in. Without top-level `pdf`, use `--route` to print an existing Astro page; `astroprint` will not guess a default PDF route.
 
 `astroprint pdf` builds temporary HTML into `.astroprint/` before rendering the PDF.
 
 `npx astroprint ...` runs the `astroprint` CLI, but the Playwright backend imports the `playwright` package from the project at runtime. Install Playwright in the project when using `backend: "playwright"`; `npx playwright ...` is useful for Playwright's own install/setup commands, but it does not replace the runtime dependency.
 
-If a route config omits `route`, it is injected at `/astroprint/{collection}` to avoid colliding with hand-written pages. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `astroprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `astroprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `astroprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.
+Each injected route config must include `route`; astroprint does not inject a default route path. `pdf.route` and `--route` accept either `/cv-notes` or `/cv-notes/`; `astroprint` resolves both against Astro's static output and uses a trailing slash internally for directory routes so relative assets keep the same base URL. `pdf.document` and the optional `astroprint pdf [document]` positional argument append a document path to the selected route, so `pdf.route: "/cv"` plus `astroprint pdf mydoc` prints `/cv/mydoc/`. The positional argument overrides `pdf.document`; omit it to print the base route as before.
 
 `pdf.output`, `pdf.outputDir`, `--output`, and `--output-dir` are normal filesystem paths, not Astro routes. `outputDir` is the base directory, and `output` is resolved inside it. Absolute `output` paths are used as-is. Relative paths are resolved from the project root/current working directory. For example, `outputDir: "public"` plus `/cv-notes` writes `public/cv-notes.pdf`; `outputDir: "public"` plus `output: "CV.pdf"` writes `public/CV.pdf`.
 

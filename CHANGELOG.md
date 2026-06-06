@@ -4,6 +4,23 @@ All notable changes will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Added `AcademicDocument.astro` for reusing the built-in academic CV document surface inside caller-owned layouts.
+- Added `PreviewShell.astro` for reusing generated-route navigation, print behavior, scroll restoration, and Paged.js preview branching without astroprint's `BaseLayout.astro`.
+- `PrintPreview.astro` now defaults its ready event to `astroprint-preview:ready`.
+
+### Changed
+
+- Route configs now require an explicit `route`; astroprint no longer injects a default `/astroprint/{collection}` route.
+- Renamed the integration route-injection option from `routes` to `injectedRoutes`.
+- Paged preview routes are now opt-in. Set `previewRoute: true` for the default preview path or pass a custom preview route string.
+- Generated routes now pass `withRouteShell={true}` to layouts.
+- Removed `PreviewLayout.astro`; use `PreviewShell.astro` inside a layout instead.
+- `AcademicLayout.astro` now composes `AcademicDocument.astro`.
+
 
 ## [0.1.1] - 2026-06-06
 

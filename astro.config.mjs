@@ -7,7 +7,7 @@ export default defineConfig({
   outDir: "site-dist",
   integrations: [
     print({
-      routes: [
+      injectedRoutes: [
         {
           collection: "cv",
           route: "/cv",

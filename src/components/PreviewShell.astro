@@ -1,0 +1,130 @@
+---
+import PrintPreview from "./PrintPreview.astro";
+
+interface Props {
+  normalHref: string;
+  previewHref?: string;
+  printPreview?: boolean;
+}
+
+const {
+  normalHref,
+  previewHref,
+  printPreview = false,
+} = Astro.props;
+---
+
+<script>
+  // print page
+  document.querySelector("[data-print-button]")?.addEventListener("click", () => {
+    window.print();
+  });
+
+  // restore scroll position
+  const scrollKey = `astroprint-scroll:${window.location.pathname}`;
+  const restoreScroll = () => {
+    const savedY = Number(sessionStorage.getItem(scrollKey));
+    if (Number.isFinite(savedY) && savedY > 0) {
+      requestAnimationFrame(() => window.scrollTo(0, savedY));
+    }
+  };
+  const saveScroll = () => {
+    sessionStorage.setItem(scrollKey, String(Math.round(window.scrollY)));
+  };
+
+  window.history.scrollRestoration = "manual";
+  window.addEventListener("scroll", saveScroll, { passive: true });
+  window.addEventListener("pagehide", saveScroll);
+  window.addEventListener("pageshow", restoreScroll);
+  window.addEventListener("astroprint-preview:ready", restoreScroll);
+</script>
+
+<div class="astroprint-scope astroprint-layout">
+  <nav class="astroprint-nav" aria-label="Document navigation">
+    <a class="astroprint-wordmark" href="/">Home</a>
+    <div class="astroprint-nav-links">
+      {printPreview && <span class="astroprint-preview-status" aria-live="polite">Paginating...</span>}
+      {printPreview ? <a href={normalHref}>Normal View</a> : previewHref && <a href={previewHref}>Paged Preview</a>}
+      <button class="astroprint-nav-button" type="button" data-print-button>Print</button>
+    </div>
+  </nav>
+
+  {
+    printPreview ? (
+      <PrintPreview
+        documentSelector=".astroprint-document"
+        styleSelector="style:not([data-preview-ignore])"
+        statusSelector=".astroprint-preview-status"
+      >
+        <slot />
+      </PrintPreview>
+    ) : (
+      <slot />
+    )
+  }
+</div>
+
+<style is:inline data-preview-ignore>
+  .astroprint-nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+    width: var(--astroprint-document-width);
+    height: var(--astroprint-nav-height);
+    margin: 0 auto calc(-1 * var(--astroprint-nav-height));
+    padding: 10px var(--astroprint-page-margin-x);
+    background: #ffffffeb;
+    backdrop-filter: blur(10px);
+    color: #64615d;
+    font: 13px/1.2 ui-sans-serif, system-ui, sans-serif;
+    white-space: nowrap;
+  }
+
+  .astroprint-wordmark {
+    color: #181716;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .astroprint-nav-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .astroprint-nav-links a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .astroprint-nav-button {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .astroprint-preview-status {
+    color: #64615d;
+    font-size: 0.82rem;
+  }
+
+  @media print {
+    html,
+    body {
+      background: white;
+    }
+
+    .astroprint-nav {
+      display: none;
+    }
+  }
+</style>

@@ -4,22 +4,23 @@
 
 `astroprint` is an Astro integration for Markdown-first documents with normal web preview, Paged.js browser preview, and PDF export.
 
-Calling `astroprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `routes`, and do not set a default PDF target unless the user configures top-level `pdf`. `routes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
+Calling `astroprint()` with no options should only install the Markdown processing pipeline: directives, the built-in `:logolink` transform, BibTeX conversion, and HTML comment stripping. Do not inject collection routes unless the user explicitly configures `injectedRoutes`, and do not set a default PDF target unless the user configures top-level `pdf`. `injectedRoutes` is a list, not a keyed object; PDF generation is configured separately through top-level `pdf`.
 
 The integration should update Vite config so `vite.server.watch.ignored` includes `**/.astroprint*/**`. Preserve caller-owned watcher ignores via Astro/Vite config merging, and do not re-add the exact pattern when it is already configured.
 
-Route injection should be decided before calling `injectRoute`, not inside generated route `getStaticPaths()`. Generated routes should assume they are meant to render once injected. In `astro dev`, always inject configured routes. In PDF render builds, `ASTROPRINT_RENDER_HTML=true` must force route injection regardless of route flags so `astroprint pdf` can reach configured routes. In normal `astro build`, each route's `injectDuringBuild` flag controls injection; it defaults to `true`, and `false` keeps that route out of the production build graph to avoid preview-only client chunks such as `PrintPreview.astro` unless the user opted in.
+Route injection should be decided before calling `injectRoute`, not inside generated route `getStaticPaths()`. Generated routes should assume they are meant to render once injected. In `astro dev`, always inject configured normal routes. In PDF render builds, `ASTROPRINT_RENDER_HTML=true` must force normal route injection regardless of route flags so `astroprint pdf` can reach configured routes. In normal `astro build`, each route's `injectDuringBuild` flag controls normal route injection; it defaults to `true`. Preview routes are opt-in only: omit `previewRoute` or set `previewRoute: false` to skip preview route injection, set `previewRoute: true` to use the default `${route}-preview` path (`/preview` for `/`), or pass a custom preview route string.
 
-When a route config omits `route`, the default route is `/astroprint/{collection}`. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
+Route configs must include an explicit `route`; astroprint should not guess a public URL. PDF output paths are resolved as normal filesystem paths: `outputDir` is the base directory and `output` is resolved inside it, with absolute `output` paths used as-is. When the CLI omits `--port`, the temporary server should bind to an OS-assigned free port.
 
 `astroprint pdf` builds temporary HTML into `.astroprint/`. After the Astro build, write `.astroprint/.gitignore` with `*` because the build may recreate the output directory; do not unignore that file from inside itself. Validation directories such as `.astroprint-check/` remain maintainer-managed.
 
 The package code lives in `src/`. Built-in Astro surfaces live directly under top-level source folders:
 
 - `src/components/Document.astro` is the theme-neutral default document root. It should not render title markup or assume frontmatter fields.
+- `src/components/AcademicDocument.astro` is the built-in academic document surface. It imports the academic CV theme, renders academic title markup, and wraps slotted content in `Document.astro`.
+- `src/components/PreviewShell.astro` is the theme-neutral generated-route shell with navigation, print button, preview status, scroll restoration, and normal/Paged.js preview branching.
 - `src/layouts/BaseLayout.astro` is the minimal HTML shell with `<html>`, `<head>`, viewport metadata, optional `pageTitle`, and global page/body baseline.
-- `src/layouts/PreviewLayout.astro` is the theme-neutral preview shell with navigation, print button, preview status, and preview branching.
-- `src/layouts/AcademicLayout.astro` is the built-in academic layout. It imports the academic CV theme, renders academic title markup, and switches between `BaseLayout.astro` and `PreviewLayout.astro` with its `preview` prop.
+- `src/layouts/AcademicLayout.astro` is the built-in academic layout. It maps frontmatter/entry fields and switches between plain `AcademicDocument.astro` and `PreviewShell.astro + AcademicDocument.astro` with its `withRouteShell` prop.
 - `src/components/PrintPreview.astro` is the document-agnostic Paged.js preview wrapper.
 - `src/styles/base.css` defines the required baseline page, typography, and preview CSS variables plus neutral document root styles.
 - `src/styles/academic-cv.css` is the built-in academic CV document theme.
@@ -113,8 +114,9 @@ Keep document styles and preview chrome styles separate:
 - `academic-cv.css` should override baseline variables and style document content for the built-in academic theme.
 - `Document.astro` should own only the theme-neutral document root and may import `base.css`; do not import theme CSS from it. AstroPrint-owned root elements should use the `astroprint-scope` class so `base.css` can apply scoped reset styles without touching host-page chrome.
 - `BaseLayout.astro` should own only the HTML shell, optional `pageTitle`, and global page/body baseline.
-- `PreviewLayout.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, and caller-owned preview chrome styles.
-- `AcademicLayout.astro` should own the built-in academic title markup and frontmatter/entry mapping. It defaults to `BaseLayout.astro` for standalone Markdown and uses `PreviewLayout.astro` when generated routes pass `preview={true}`.
+- `AcademicDocument.astro` should own the built-in academic title markup and academic theme import.
+- `PreviewShell.astro` should own only the theme-neutral navigation, print button, preview status, preview branching, scroll restoration, and caller-owned preview chrome styles.
+- `AcademicLayout.astro` should own frontmatter/entry mapping and compose `AcademicDocument.astro` with `PreviewShell.astro` when generated routes pass `withRouteShell={true}`.
 - `PrintPreview.astro` should remain document-agnostic and should not depend on `.astroprint-document` beyond what callers pass through `documentSelector`. Layouts that render their own document root without `Document.astro` should import `base.css` or define equivalent page variables and `@page` rules.
 
 Standalone Markdown pages can opt into the built-in academic document surface with:
