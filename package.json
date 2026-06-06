@@ -1,6 +1,6 @@
 {
   "name": "astroprint",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Astro integration for print-ready, Markdown-first documents with paged preview and PDF export.",
   "author": "Atomie CHEN <atomic_cwh@163.com>",
   "license": "MIT",
