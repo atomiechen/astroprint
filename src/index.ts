@@ -17,7 +17,10 @@ export type {
 } from "./lib/remark-astroprint-directives.js";
 export type {
   AstroPrintAstroOptions,
+  AstroPrintCollectionEntryRouteConfig,
+  AstroPrintCollectionRouteConfig,
   AstroPrintInjectedRouteConfig,
+  AstroPrintMarkdownRouteConfig,
   AstroPrintPdfConfig,
 } from "./integration.js";
 export type {

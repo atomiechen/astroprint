@@ -14,6 +14,17 @@ export default defineConfig({
           previewRoute: "/cv-preview",
           defaultId: "main",
         },
+        {
+          collection: "cv",
+          entry: "main",
+          route: "/cv-entry",
+          previewRoute: true,
+        },
+        {
+          markdown: "./playground/content/cv/main.md",
+          route: "/cv-markdown",
+          previewRoute: true,
+        },
       ],
       pdf: {
         route: "/cv",

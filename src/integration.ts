@@ -17,14 +17,38 @@ export type AstroPrintPdfConfig = {
   backend?: "weasyprint" | "playwright";
 };
 
-export type AstroPrintInjectedRouteConfig = {
-  collection: string;
+type AstroPrintInjectedRouteBaseConfig = {
   layout?: string;
   route: string;
   previewRoute?: boolean | string;
-  defaultId?: string;
   injectDuringBuild?: boolean;
 };
+
+export type AstroPrintCollectionRouteConfig = AstroPrintInjectedRouteBaseConfig & {
+  collection: string;
+  defaultId?: string;
+  entry?: never;
+  markdown?: never;
+};
+
+export type AstroPrintCollectionEntryRouteConfig = AstroPrintInjectedRouteBaseConfig & {
+  collection: string;
+  entry: string;
+  defaultId?: never;
+  markdown?: never;
+};
+
+export type AstroPrintMarkdownRouteConfig = AstroPrintInjectedRouteBaseConfig & {
+  markdown: string;
+  collection?: never;
+  entry?: never;
+  defaultId?: never;
+};
+
+export type AstroPrintInjectedRouteConfig =
+  | AstroPrintCollectionRouteConfig
+  | AstroPrintCollectionEntryRouteConfig
+  | AstroPrintMarkdownRouteConfig;
 
 export type AstroPrintAstroOptions = AstroPrintDirectiveOptions & {
   injectedRoutes?: AstroPrintInjectedRouteConfig[];
@@ -56,20 +80,20 @@ const toImportPath = (path: string) => {
   return normalized.startsWith(".") ? normalized : `./${normalized}`;
 };
 
-const resolveLayoutImportSpecifier = ({
-  layout,
+const resolveImportSpecifier = ({
+  specifier,
   root,
   importer,
 }: {
-  layout: string;
+  specifier: string;
   root: URL;
   importer: URL;
 }) => {
-  if (!isPathSpecifier(layout)) return layout;
+  if (!isPathSpecifier(specifier)) return specifier;
 
   const importerDir = dirname(fileURLToPath(importer));
-  const layoutUrl = isAbsolute(layout) ? pathToFileURL(layout) : new URL(layout, root);
-  return toImportPath(relative(importerDir, fileURLToPath(layoutUrl)));
+  const specifierUrl = isAbsolute(specifier) ? pathToFileURL(specifier) : new URL(specifier, root);
+  return toImportPath(relative(importerDir, fileURLToPath(specifierUrl)));
 };
 
 const hasAstroprintWatchIgnore = (ignored: unknown) =>
@@ -122,57 +146,53 @@ export default function astroprint(options: AstroPrintAstroOptions = {}): AstroI
               route,
               previewRoute,
             });
-            const collection = routeConfig.collection;
             const layout = routeConfig.layout ?? "astroprint/layouts/AcademicLayout.astro";
-            const defaultId = routeConfig.defaultId ?? "main";
             const configFile = new URL(`${name}.json`, codegenDir);
             const normalEntrypoint = new URL(`${name}.astro`, codegenDir);
-            const normalLayout = resolveLayoutImportSpecifier({
-              layout,
+            const normalLayout = resolveImportSpecifier({
+              specifier: layout,
+              root: config.root,
+              importer: normalEntrypoint,
+            });
+            const normalRouteEntrypoint = createRouteEntrypoint({
+              routeConfig,
+              configFileName: basename(fileURLToPath(configFile)),
+              layout: normalLayout,
+              pattern: route,
+              printPreview: false,
               root: config.root,
               importer: normalEntrypoint,
             });
 
             writeFileSync(configFile, generatedConfig, "utf-8");
-            writeFileSync(
-              normalEntrypoint,
-              createRouteEntrypoint({
-                configFileName: basename(fileURLToPath(configFile)),
-                collection,
-                layout: normalLayout,
-                defaultId,
-                printPreview: false,
-              }),
-              "utf-8",
-            );
+            writeFileSync(normalEntrypoint, normalRouteEntrypoint.source, "utf-8");
 
             injectRoute({
-              pattern: `${route}/[...document]`,
+              pattern: normalRouteEntrypoint.pattern,
               entrypoint: normalEntrypoint,
             });
 
             if (previewRoute) {
               const previewEntrypoint = new URL(`${name}-preview.astro`, codegenDir);
-              const previewLayout = resolveLayoutImportSpecifier({
-                layout,
+              const previewLayout = resolveImportSpecifier({
+                specifier: layout,
+                root: config.root,
+                importer: previewEntrypoint,
+              });
+              const previewRouteEntrypoint = createRouteEntrypoint({
+                routeConfig,
+                configFileName: basename(fileURLToPath(configFile)),
+                layout: previewLayout,
+                pattern: previewRoute,
+                printPreview: true,
                 root: config.root,
                 importer: previewEntrypoint,
               });
 
-              writeFileSync(
-                previewEntrypoint,
-                createRouteEntrypoint({
-                  configFileName: basename(fileURLToPath(configFile)),
-                  collection,
-                  layout: previewLayout,
-                  defaultId,
-                  printPreview: true,
-                }),
-                "utf-8",
-              );
+              writeFileSync(previewEntrypoint, previewRouteEntrypoint.source, "utf-8");
 
               injectRoute({
-                pattern: `${previewRoute}/[...document]`,
+                pattern: previewRouteEntrypoint.pattern,
                 entrypoint: previewEntrypoint,
               });
             }
@@ -191,19 +211,77 @@ export default function astroprint(options: AstroPrintAstroOptions = {}): AstroI
   };
 }
 
+const routeHref = (routeExpression: string) => `(${routeExpression} === "/" ? "/" : \`\${${routeExpression}}/\`)`;
+
 const createRouteEntrypoint = ({
+  routeConfig,
   configFileName,
-  collection,
   layout,
+  pattern,
+  printPreview,
+  root,
+  importer,
+}: {
+  routeConfig: AstroPrintInjectedRouteConfig;
+  configFileName: string;
+  layout: string;
+  pattern: string;
+  printPreview: boolean;
+  root: URL;
+  importer: URL;
+}) => {
+  if (typeof routeConfig.markdown === "string") {
+    return createMarkdownRouteEntrypoint({
+      configFileName,
+      layout,
+      markdown: resolveImportSpecifier({
+        specifier: routeConfig.markdown,
+        root,
+        importer,
+      }),
+      pattern,
+      printPreview,
+    });
+  }
+
+  if (typeof routeConfig.entry === "string") {
+    return createCollectionEntryRouteEntrypoint({
+      collection: routeConfig.collection,
+      configFileName,
+      entry: routeConfig.entry,
+      layout,
+      pattern,
+      printPreview,
+    });
+  }
+
+  return createCollectionRouteEntrypoint({
+    collection: routeConfig.collection,
+    configFileName,
+    defaultId: routeConfig.defaultId ?? "main",
+    layout,
+    pattern,
+    printPreview,
+  });
+};
+
+const createCollectionRouteEntrypoint = ({
+  collection,
+  configFileName,
   defaultId,
+  layout,
+  pattern,
   printPreview,
 }: {
-  configFileName: string;
   collection: string;
-  layout: string;
+  configFileName: string;
   defaultId: string;
+  layout: string;
+  pattern: string;
   printPreview: boolean;
-}) => `---
+}) => ({
+  pattern: `${pattern}/[...document]`,
+  source: `---
 import { getCollection, render } from "astro:content";
 import RouteLayout from ${JSON.stringify(layout)};
 import documentConfig from "./${configFileName}";
@@ -241,4 +319,92 @@ const previewHref = previewRoute ? \`\${previewRoute}\${suffix}\` : undefined;
 >
   <Content />
 </RouteLayout>
-`;
+`,
+});
+
+const createCollectionEntryRouteEntrypoint = ({
+  collection,
+  configFileName,
+  entry,
+  layout,
+  pattern,
+  printPreview,
+}: {
+  collection: string;
+  configFileName: string;
+  entry: string;
+  layout: string;
+  pattern: string;
+  printPreview: boolean;
+}) => ({
+  pattern,
+  source: `---
+import { getEntry, render } from "astro:content";
+import RouteLayout from ${JSON.stringify(layout)};
+import documentConfig from "./${configFileName}";
+
+const printPreview = ${String(printPreview)};
+const route = documentConfig.route;
+const previewRoute = documentConfig.previewRoute;
+const entry = await getEntry(${JSON.stringify(collection)}, ${JSON.stringify(entry)});
+
+if (!entry) {
+  throw new Error(\`astroprint could not find collection entry "${JSON.stringify(collection).slice(1, -1)}/${JSON.stringify(entry).slice(1, -1)}".\`);
+}
+
+const { Content } = await render(entry);
+const normalHref = ${routeHref("route")};
+const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
+---
+
+<RouteLayout
+  withRouteShell={true}
+  normalHref={normalHref}
+  previewHref={previewHref}
+  printPreview={printPreview}
+  entry={entry}
+  documentConfig={documentConfig}
+>
+  <Content />
+</RouteLayout>
+`,
+});
+
+const createMarkdownRouteEntrypoint = ({
+  configFileName,
+  layout,
+  markdown,
+  pattern,
+  printPreview,
+}: {
+  configFileName: string;
+  layout: string;
+  markdown: string;
+  pattern: string;
+  printPreview: boolean;
+}) => ({
+  pattern,
+  source: `---
+import RouteLayout from ${JSON.stringify(layout)};
+import { Content, frontmatter } from ${JSON.stringify(markdown)};
+import documentConfig from "./${configFileName}";
+
+const printPreview = ${String(printPreview)};
+const route = documentConfig.route;
+const previewRoute = documentConfig.previewRoute;
+const normalHref = ${routeHref("route")};
+const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
+---
+
+<RouteLayout
+  withRouteShell={true}
+  normalHref={normalHref}
+  previewHref={previewHref}
+  printPreview={printPreview}
+  frontmatter={frontmatter}
+  documentConfig={documentConfig}
+>
+  <Content />
+</RouteLayout>
+`,
+});

@@ -37,7 +37,9 @@ export default defineConfig({
 
 The integration also excludes astroprint-generated work directories matching `**/.astroprint*/**` from Vite's dev-server watcher.
 
-Add `injectedRoutes` only when you want `astroprint` to inject collection-backed document routes. Each injected route must provide an explicit `route`; astroprint will not guess a public URL for you. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`:
+Add `injectedRoutes` only when you want `astroprint` to inject normal and optional preview routes for a document source. Each injected route must provide an explicit `route`; astroprint will not guess a public URL for you. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`.
+
+The fastest setup is a single Markdown file:
 
 ```js title="astro.config.mjs"
 // astro.config.mjs
@@ -49,11 +51,10 @@ export default defineConfig({
     print({
       injectedRoutes: [
         {
-          collection: "cv",
+          markdown: "./src/content/cv.md",
           route: "/astroprint",
           // Optional. Set true for /astroprint-preview, or pass a custom path.
           previewRoute: true,
-          defaultId: "main",
           // Optional. Defaults to true for normal astro build.
           injectDuringBuild: false,
         },
@@ -64,6 +65,36 @@ export default defineConfig({
         backend: "weasyprint",
       },
     }),
+  ],
+});
+```
+
+For Astro content collections, use `collection` with `entry` when you want one specific item:
+
+```js title="astro.config.mjs"
+print({
+  injectedRoutes: [
+    {
+      collection: "cv",
+      entry: "main",
+      route: "/astroprint",
+      previewRoute: true,
+    },
+  ],
+});
+```
+
+Or omit `entry` when you want a multi-document collection route:
+
+```js title="astro.config.mjs"
+print({
+  injectedRoutes: [
+    {
+      collection: "cv",
+      route: "/astroprint",
+      previewRoute: true,
+      defaultId: "main",
+    },
   ],
 });
 ```
@@ -90,7 +121,7 @@ const cv = defineCollection({
 export const collections = { cv };
 ```
 
-The generated route passes the raw collection `entry` to the configured layout. The built-in academic layout maps `title`/`secondaryTitle`; custom layouts can use any frontmatter shape.
+Collection-backed generated routes pass the raw collection `entry` to the configured layout. Single Markdown routes pass `frontmatter`. The built-in academic layout maps `title`/`secondaryTitle`; custom layouts can use any frontmatter shape.
 
 Add at least one Markdown file to the collection:
 
@@ -115,7 +146,7 @@ secondaryTitle: Computing Notes
 :::::
 ```
 
-The filename becomes the document id. This example uses `main.md` because the injected route config above sets `defaultId: "main"`, so it renders at `/astroprint/`. Other ids render at paths such as `/astroprint/example/`, or you can change `defaultId`.
+For multi-document collection routes, the filename becomes the document id. This example uses `main.md` because the injected route config above sets `defaultId: "main"`, so it renders at `/astroprint/`. Other ids render at paths such as `/astroprint/example/`, or you can change `defaultId`.
 
 Run Astro for development:
 

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Added `AcademicDocument.astro` for reusing the built-in academic CV document surface inside caller-owned layouts.
 - Added `PreviewShell.astro` for reusing generated-route navigation, print behavior, scroll restoration, and Paged.js preview branching without astroprint's `BaseLayout.astro`.
+- Added injected route support for single Markdown files and single content collection entries.
 - `PrintPreview.astro` now defaults its ready event to `astroprint-preview:ready`.
 
 ### Changed
