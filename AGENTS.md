@@ -18,7 +18,7 @@ The package code lives in `src/`. Built-in Astro surfaces live directly under to
 
 - `src/components/Document.astro` is the theme-neutral default document root. It should not render title markup or assume frontmatter fields.
 - `src/components/AcademicDocument.astro` is the built-in academic document surface. It imports the academic CV theme, renders academic title markup, and wraps slotted content in `Document.astro`.
-- `src/components/PreviewShell.astro` is the theme-neutral generated-route shell with navigation, print button, preview status, scroll restoration, and normal/Paged.js preview branching.
+- `src/components/PreviewShell.astro` is the theme-neutral preview shell with navigation, print button, preview status, scroll restoration, and normal/Paged.js preview branching.
 - `src/layouts/BaseLayout.astro` is the minimal HTML shell with `<html>`, `<head>`, viewport metadata, optional `pageTitle`, and global page/body baseline.
 - `src/layouts/AcademicLayout.astro` is the built-in academic layout. It maps frontmatter/entry fields and switches between plain `AcademicDocument.astro` and `PreviewShell.astro + AcademicDocument.astro` with its `withPreviewShell` prop.
 - `src/components/PrintPreview.astro` is the document-agnostic Paged.js preview wrapper.

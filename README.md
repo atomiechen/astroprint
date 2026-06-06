@@ -37,9 +37,7 @@ export default defineConfig({
 
 The integration also excludes astroprint-generated work directories matching `**/.astroprint*/**` from Vite's dev-server watcher.
 
-Add `injectedRoutes` only when you want `astroprint` to inject normal and optional preview routes for a document source. Each injected route must provide an explicit `route`; astroprint will not guess a public URL for you. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`.
-
-The fastest setup is a single Markdown file:
+Add `injectedRoutes` only when you want `astroprint` to inject normal and optional preview routes for a document source. Each injected route must provide an explicit `route`; astroprint will not guess a public URL for you. Add top-level `pdf` when you want `astroprint pdf` to work without passing `--route`:
 
 ```js title="astro.config.mjs"
 // astro.config.mjs
@@ -53,9 +51,7 @@ export default defineConfig({
         {
           markdown: "./src/content/cv.md",
           route: "/astroprint",
-          // Optional. Set true for /astroprint-preview, or pass a custom path.
           previewRoute: true,
-          // Optional. Defaults to true for normal astro build.
           injectDuringBuild: false,
         },
       ],
@@ -69,41 +65,21 @@ export default defineConfig({
 });
 ```
 
-For Astro content collections, use `collection` with `entry` when you want one specific item:
-
-```js title="astro.config.mjs"
-print({
-  injectedRoutes: [
-    {
-      collection: "cv",
-      entry: "main",
-      route: "/astroprint",
-      previewRoute: true,
-    },
-  ],
-});
-```
-
-Or omit `entry` when you want a multi-document collection route:
-
-```js title="astro.config.mjs"
-print({
-  injectedRoutes: [
-    {
-      collection: "cv",
-      route: "/astroprint",
-      previewRoute: true,
-      defaultId: "main",
-    },
-  ],
-});
-```
-
 By default, configured injected routes are emitted during normal `astro build`, so `/astroprint/` can be part of your production site. Set `injectDuringBuild: false` on an injected route when you only want it during `astro dev` and `astroprint pdf`; the PDF command always enables route injection internally with `ASTROPRINT_RENDER_HTML=true`.
 
 Paged preview routes are opt-in. Omit `previewRoute` or set `previewRoute: false` to inject only the normal route. Set `previewRoute: true` to inject the default preview path (`${route}-preview`, or `/preview` for `/`), or pass a string such as `previewRoute: "/astroprint-preview"`.
 
-Define the content collection:
+Route sources can be:
+
+```js
+[
+  { markdown: "./src/content/cv.md", route: "/cv" },
+  { collection: "cv", entry: "main", route: "/cv" },
+  { collection: "cv", route: "/cv", defaultId: "main" },
+]
+```
+
+For collection routes, define an Astro content collection:
 
 ```ts
 // src/content.config.ts
@@ -123,7 +99,7 @@ export const collections = { cv };
 
 Collection-backed generated routes pass the raw collection `entry` to the configured layout. Single Markdown routes pass `frontmatter`. The built-in academic layout maps `title`/`secondaryTitle`; custom layouts can use any frontmatter shape.
 
-Add at least one Markdown file to the collection:
+Example Markdown:
 
 ```md title="src/content/cv/main.md"
 ---
@@ -146,7 +122,7 @@ secondaryTitle: Computing Notes
 :::::
 ```
 
-For multi-document collection routes, the filename becomes the document id. This example uses `main.md` because the injected route config above sets `defaultId: "main"`, so it renders at `/astroprint/`. Other ids render at paths such as `/astroprint/example/`, or you can change `defaultId`.
+For multi-document collection routes, the filename becomes the document id. `defaultId: "main"` renders `main.md` at `/cv/`; other ids render at paths such as `/cv/example/`.
 
 Run Astro for development:
 
@@ -283,7 +259,7 @@ flowchart TD
 - `PreviewShell.astro` provides the normal/preview navigation, print button, scroll restoration, and optional `PrintPreview`.
 - `AcademicLayout.astro` provides the built-in academic document surface and uses `PreviewShell` when generated routes pass `withPreviewShell={true}`.
 
-When a custom theme wraps `PreviewShell.astro`, it mainly needs to map collection data into markup and import its own stylesheet:
+When a custom theme wraps `PreviewShell.astro`, it mainly needs to map entry/frontmatter data into markup and import its own stylesheet:
 
 ```astro title="src/layouts/MyThemedDocumentLayout.astro"
 ---
@@ -294,21 +270,21 @@ import BaseLayout from "./BaseLayout.astro";
 import "./my-document.css";
 
 type Props = ComponentProps<typeof PreviewShell> & {
-  secondaryTitle?: string;
+  frontmatter?: Record<string, unknown>;
   entry?: {
     id?: string;
     data?: Record<string, unknown>;
   };
 };
 
-const { entry } = Astro.props;
+const { entry, frontmatter } = Astro.props;
 const title =
-  Astro.props.title ??
   (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
+  (typeof frontmatter?.title === "string" ? frontmatter.title : undefined) ??
   entry?.id;
 const secondaryTitle =
-  Astro.props.secondaryTitle ??
-  (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined);
+  (typeof entry?.data?.secondaryTitle === "string" ? entry.data.secondaryTitle : undefined) ??
+  (typeof frontmatter?.secondaryTitle === "string" ? frontmatter.secondaryTitle : undefined);
 ---
 
 <BaseLayout pageTitle={title}>
