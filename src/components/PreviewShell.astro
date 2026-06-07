@@ -2,12 +2,14 @@
 import PrintPreview from "./PrintPreview.astro";
 
 interface Props {
+  homeHref?: string;
   normalHref?: string;
   previewHref?: string;
   printPreview?: boolean;
 }
 
 const {
+  homeHref = import.meta.env.BASE_URL,
   normalHref,
   previewHref,
   printPreview = false,
@@ -41,7 +43,7 @@ const {
 
 <div class="astroprint-scope astroprint-layout">
   <nav class="astroprint-nav" aria-label="Document navigation">
-    <a class="astroprint-wordmark" href="/">Home</a>
+    <a class="astroprint-wordmark" href={homeHref}>Home</a>
     <div class="astroprint-nav-links">
       {printPreview && <span class="astroprint-preview-status" aria-live="polite">Paginating...</span>}
       {

@@ -211,7 +211,9 @@ export default function astroprint(options: AstroPrintAstroOptions = {}): AstroI
   };
 }
 
-const routeHref = (routeExpression: string) => `(${routeExpression} === "/" ? "/" : \`\${${routeExpression}}/\`)`;
+const routeHrefHelpers = `const basePath = import.meta.env.BASE_URL.replace(/\\/$/, "");
+const withBase = (href) => href === "/" ? import.meta.env.BASE_URL : \`\${basePath}\${href}\`;
+const routeHref = (route, suffix = "/") => withBase(\`\${route === "/" ? "" : route}\${suffix}\`);`;
 
 const createRouteEntrypoint = ({
   routeConfig,
@@ -305,8 +307,9 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await render(entry);
 const suffix = entry.id === defaultId ? "/" : \`/\${entry.id}/\`;
-const normalHref = \`\${route}\${suffix}\`;
-const previewHref = previewRoute ? \`\${previewRoute}\${suffix}\` : undefined;
+${routeHrefHelpers}
+const normalHref = routeHref(route, suffix);
+const previewHref = previewRoute ? routeHref(previewRoute, suffix) : undefined;
 ---
 
 <RouteLayout
@@ -353,8 +356,9 @@ if (!entry) {
 }
 
 const { Content } = await render(entry);
-const normalHref = ${routeHref("route")};
-const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
+${routeHrefHelpers}
+const normalHref = routeHref(route);
+const previewHref = previewRoute ? routeHref(previewRoute) : undefined;
 ---
 
 <RouteLayout
@@ -392,8 +396,9 @@ import documentConfig from "./${configFileName}";
 const printPreview = ${String(printPreview)};
 const route = documentConfig.route;
 const previewRoute = documentConfig.previewRoute;
-const normalHref = ${routeHref("route")};
-const previewHref = previewRoute ? ${routeHref("previewRoute")} : undefined;
+${routeHrefHelpers}
+const normalHref = routeHref(route);
+const previewHref = previewRoute ? routeHref(previewRoute) : undefined;
 ---
 
 <RouteLayout

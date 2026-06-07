@@ -4,6 +4,13 @@ All notable changes will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Generated route navigation now respects Astro's `base` config for normal and Paged.js preview links.
+- `PreviewShell.astro` now defaults its Home link to Astro's `BASE_URL`, so package-owned navigation stays inside subpath deployments.
+
 ## [0.2.0] - 2026-06-07
 
 ### Added
