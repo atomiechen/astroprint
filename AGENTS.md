@@ -26,7 +26,7 @@ The package code lives in `src/`. Built-in Astro surfaces live directly under to
 - `src/styles/academic-cv.css` is the built-in academic CV document theme.
 - `src/vendor/pagedjs-0.4.3.esm.min.js` is the vendored minified Paged.js ESM bundle used by `PrintPreview.astro`.
 
-The playground content lives under `playground/` and is useful for local validation.
+The playground content lives under `playground/` and is useful for local validation. The root Astro config imports the integration from `src` and aliases the `astroprint` package specifier to `src` for playground builds, so local demo routes and standalone Markdown layouts exercise current source files without requiring a prior `dist/` build. Keep `pnpm build` as the validation step for package output.
 
 ## Markdown Directives
 
