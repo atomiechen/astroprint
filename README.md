@@ -1,3 +1,5 @@
+
+
 # astroprint — print-ready Markdown for Astro
 
 [![NPM](https://img.shields.io/npm/v/astroprint?logo=npm&label=astroprint)](https://www.npmjs.com/package/astroprint)
@@ -256,7 +258,7 @@ flowchart TD
 - `Document.astro` provides the default document root and baseline page styles.
 - `AcademicDocument.astro` provides `Document` plus the built-in academic theme and title block.
 - `PrintPreview.astro` provides the document-agnostic Paged.js wrapper.
-- `PreviewShell.astro` provides the normal/preview navigation, print button, scroll restoration, and optional `PrintPreview`.
+- `PreviewShell.astro` provides the theme-neutral preview shell with navigation, print button, preview status, scroll restoration, and Paged.js preview branching.
 - `AcademicLayout.astro` provides the built-in academic document surface and uses `PreviewShell` when generated routes pass `withPreviewShell={true}`.
 
 When a custom theme wraps `PreviewShell.astro`, it mainly needs to map entry/frontmatter data into markup and import its own stylesheet:
