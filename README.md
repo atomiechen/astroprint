@@ -11,19 +11,7 @@ Use `astroprint` for CVs, reports, notes, and other Markdown-first documents tha
 
 ## Demo
 
-The repository includes a playground-backed demo site that shows the same Markdown document through normal Astro routes and Paged.js preview routes:
-
-- Demo home: <https://atomiechen.github.io/astroprint/>
-- Normal collection route: <https://atomiechen.github.io/astroprint/cv/>
-- Paged.js preview route: <https://atomiechen.github.io/astroprint/cv-preview/>
-
-The demo home explains three progressive authoring paths: an Astro-native Markdown page, generated Web/Paged routes from one Markdown file, and generated routes from an Astro content collection. The collection example shows both one-entry and whole-collection routing, and every example links to its source. The demo content lives in `playground/`. Run it locally with:
-
-```bash
-pnpm dev
-```
-
-Then open `http://localhost:4321/`, `/cv/`, or `/cv-preview/`. The `CI and Demo` workflow verifies the package and generated site once, then deploys that same `site-dist/` artifact to GitHub Pages after pushes to `main`.
+[Explore the live demo](https://atomiechen.github.io/astroprint/) to compare three progressive authoring paths, their Web and Paged.js output, custom themes, and the source behind each example.
 
 ## Quick Start
 
@@ -422,4 +410,4 @@ CLI options override the matching config fields, so `--backend` overrides `pdf.b
 
 ## Maintainers
 
-Maintainer notes, including the vendored Paged.js refresh workflow, live in [`AGENTS.md`](https://github.com/atomiechen/astroprint/blob/main/AGENTS.md).
+Maintainer notes, including instructions for refreshing the vendored Paged.js bundle, live in [`AGENTS.md`](https://github.com/atomiechen/astroprint/blob/main/AGENTS.md).
