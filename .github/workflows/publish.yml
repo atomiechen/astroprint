@@ -22,8 +22,8 @@ on:
         required: false
       release_tag:
         type: string
-        description: Tag to package (empty for latest tag)
-        required: false
+        description: Tag to package (for example, v0.2.1)
+        required: true
 
 jobs:
   build:
@@ -49,18 +49,9 @@ jobs:
         id: set_release_tag
         run: |
           release_tag="${{ inputs.release_tag }}"
-          if [ -z "$release_tag" ]; then
-            echo "Input tag is empty. Fetching latest tag."
-            release_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
-            if [ -z "$release_tag" ]; then
-              echo "No latest tag available. Exiting workflow."
-              exit 1
-            fi
-          else
-            if ! git rev-parse -q --verify "refs/tags/$release_tag" >/dev/null; then
-              echo "Invalid tag '$release_tag'. Exiting workflow."
-              exit 1
-            fi
+          if ! git rev-parse -q --verify "refs/tags/$release_tag" >/dev/null; then
+            echo "Invalid tag '$release_tag'. Exiting workflow."
+            exit 1
           fi
           echo "tag=$release_tag" >> $GITHUB_OUTPUT
       - name: Checkout release tag
@@ -78,6 +69,7 @@ jobs:
           version: 10
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
       - run: pnpm pack --pack-destination out
 
       - name: Store the built package
