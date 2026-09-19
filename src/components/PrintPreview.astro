@@ -98,6 +98,22 @@ const {
       }
       previewContent.append(previewDocument);
 
+      // Paged.js keeps the hidden source beside its visible clone. Preserve IDs on
+      // the visible pages during screen preview, then restore them on the source
+      // while the browser prints that source instead.
+      const sourceIds = [sourceDocument, ...sourceDocument.querySelectorAll("[id]")]
+        .filter((element) => element.hasAttribute("id"))
+        .map((element) => ({ element, id: element.id }));
+      const stripSourceIds = () => {
+        for (const { element } of sourceIds) element.removeAttribute("id");
+      };
+      const restoreSourceIds = () => {
+        for (const { element, id } of sourceIds) element.id = id;
+      };
+      stripSourceIds();
+      window.addEventListener("beforeprint", restoreSourceIds);
+      window.addEventListener("afterprint", stripSourceIds);
+
       previewer
         .preview(previewContent, stylesheets, previewTarget)
         .then((flow) => {
@@ -105,10 +121,16 @@ const {
           // Insert the browser-print rule after pagination so normal printing
           // from the preview route uses the document's real page margins.
           insertPrintPageStyle();
-          if (status) status.textContent = `${flow.pages.length} pages`;
+          if (status) {
+            const pageCount = flow.pages.length;
+            status.textContent = `${pageCount} ${pageCount === 1 ? "page" : "pages"}`;
+          }
           if (readyEvent) window.dispatchEvent(new Event(readyEvent));
         })
         .catch((error: unknown) => {
+          window.removeEventListener("beforeprint", restoreSourceIds);
+          window.removeEventListener("afterprint", stripSourceIds);
+          restoreSourceIds();
           previewSource.style.display = "block";
           previewTarget.setAttribute("hidden", "");
           if (status) {

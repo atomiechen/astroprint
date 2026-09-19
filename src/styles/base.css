@@ -1,4 +1,4 @@
-:root {
+:where(:root) {
   --astroprint-page-width: 210mm;
   --astroprint-page-height: 297mm;
   --astroprint-document-width: min(100%, var(--astroprint-page-width));
