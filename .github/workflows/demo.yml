@@ -1,0 +1,70 @@
+name: Deploy Demo to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Configure Pages base
+        run: |
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          echo "GitHub repository name: $repo_name"
+          if [[ "$repo_name" == *.github.io ]]; then
+            echo "Using root GitHub Pages base"
+          else
+            demo_base="/$repo_name"
+            echo "ASTROPRINT_DEMO_BASE=$demo_base" >> "$GITHUB_ENV"
+            echo "Using ASTROPRINT_DEMO_BASE=$demo_base"
+          fi
+      - name: Build package
+        run: pnpm build
+      - name: Build demo site
+        run: pnpm astro:build
+      - name: Verify demo output
+        run: pnpm demo:verify
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site-dist
+
+  deploy:
+    name: Deploy demo
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
