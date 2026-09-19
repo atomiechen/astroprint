@@ -9,6 +9,22 @@ Print-ready Markdown documents for [Astro](https://astro.build/), with normal we
 
 Use `astroprint` for CVs, reports, notes, and other Markdown-first documents that should stay editable as Astro pages while still exporting clean PDFs. It uses Astro's content, layout, asset, and dev-server behavior, then adds print-oriented Markdown transforms, optional injected document routes, paged preview, and a PDF CLI.
 
+## Demo
+
+The repository includes a playground-backed demo site that shows the same Markdown document through normal Astro routes and Paged.js preview routes:
+
+- Demo home: <https://atomiechen.github.io/astroprint/>
+- Normal collection route: <https://atomiechen.github.io/astroprint/cv/>
+- Paged.js preview route: <https://atomiechen.github.io/astroprint/cv-preview/>
+
+The demo home explains three progressive authoring paths: an Astro-native Markdown page, generated Web/Paged routes from one Markdown file, and generated routes from an Astro content collection. The collection example shows both one-entry and whole-collection routing, and every example links to its source. The demo content lives in `playground/`. Run it locally with:
+
+```bash
+pnpm dev
+```
+
+Then open `http://localhost:4321/`, `/cv/`, or `/cv-preview/`. The online demo is deployed to GitHub Pages from `site-dist/` by the `Deploy Demo to GitHub Pages` workflow.
+
 ## Quick Start
 
 Add the integration to an Astro project:
@@ -228,6 +244,35 @@ BibTeX code blocks with `style=acm`, `style=apa`, or `style=ieee` are converted 
 Set `bibtex: false` to leave BibTeX code blocks untouched, or pass `bibtex: { style: "apa", highlightedAuthors: ["Ada Lovelace"] }` to set global defaults. Local code-block meta wins over global options, so `style=ieee highlight="Ada Lovelace"` can configure one BibTeX block. Style names are case-insensitive. `acm` uses a built-in ACM DL-like formatter; `apa` and `ieee` use bundled CSL styles from the Citation Style Language styles repository. Pass `lang` globally or in code-block meta, for example `style=apa lang=en-US`, when a CSL-backed style should use a specific locale.
 
 ## Custom Layouts
+
+The shortest way to change the built-in academic theme is to wrap `AcademicLayout`, import a stylesheet, and point a Markdown page or generated route at the wrapper:
+
+```astro title="src/layouts/MyAcademicLayout.astro"
+---
+import AcademicLayout from "astroprint/layouts/AcademicLayout.astro";
+import "../styles/my-document.css";
+---
+
+<AcademicLayout {...Astro.props}>
+  <slot />
+</AcademicLayout>
+```
+
+```css title="src/styles/my-document.css"
+:root {
+  --astroprint-ink: #17242b;
+  --astroprint-link: #16647d;
+  --astroprint-serif-font: "Avenir Next", Avenir, "Helvetica Neue", Arial, sans-serif;
+  --astroprint-page-margin-x: 19mm;
+}
+
+.astroprint-document h2 {
+  color: var(--astroprint-link);
+  letter-spacing: 0.075em;
+}
+```
+
+The page size, page margins, ink and link colors, type scale, line height, and serif/CJK font stacks are exposed as `--astroprint-*` variables in [`base.css`](./src/styles/base.css) and [`academic-cv.css`](./src/styles/academic-cv.css). The demo keeps the first example on the default theme, then applies a [modern theme](./playground/styles/modern-document.css) and an [editorial theme](./playground/styles/editorial-document.css) to the other two authoring paths. Both normal pages and Paged.js previews use the same custom CSS.
 
 `astroprint` separates document structure from route shell. Use the smallest component that matches the surface you are building:
 

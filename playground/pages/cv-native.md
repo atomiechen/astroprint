@@ -1,17 +1,33 @@
 ---
+layout: astroprint/layouts/AcademicLayout.astro
 title: Weihao Chen
 secondaryTitle: 陈伟浩
-affiliation:
-  - Department of Computer Science and Technology
-  - Tsinghua University, Beijing, China
-contact:
-  - label: GitHub
-    value: atomiechen
-    href: https://github.com/atomiechen
-  - label: Website
-    value: weihaochen.com
-    href: https://weihaochen.com
+withPreviewShell: true
 ---
+
+::::meta
+:::col
+
+Department of Computer Science and Technology
+
+Tsinghua University, Beijing, China
+
+:::
+
+:::col
+
+GitHub: [atomiechen](https://github.com/atomiechen)
+
+Website: [weihaochen.com](https://weihaochen.com)
+
+:::
+::::
+
+## About this page
+
+**Astro Markdown page with the default academic theme.** This file lives in `src/pages`, so Astro creates its route directly. Its frontmatter selects the built-in astroprint layout and enables the Home and Print controls.
+
+Source: [Markdown](https://github.com/atomiechen/astroprint/blob/main/playground/pages/cv-native.md) · [layout](https://github.com/atomiechen/astroprint/blob/main/src/layouts/AcademicLayout.astro) · [theme CSS](https://github.com/atomiechen/astroprint/blob/main/src/styles/academic-cv.css).
 
 ## Education
 

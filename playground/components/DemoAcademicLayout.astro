@@ -1,0 +1,78 @@
+---
+import type { ComponentProps } from "astro/types";
+import AcademicLayout from "astroprint/layouts/AcademicLayout.astro";
+import SmartLink from "./SmartLink.astro";
+
+interface ContactItem {
+  label: string;
+  value: string;
+  href?: string;
+}
+
+interface Props {
+  introLead: string;
+  introBody: string;
+  sourceLinks: Array<{
+    label: string;
+    href: string;
+  }>;
+  frontmatter?: Record<string, unknown>;
+  entry?: {
+    data?: Record<string, unknown>;
+  };
+  [key: string]: unknown;
+}
+
+const { entry, frontmatter, introLead, introBody, sourceLinks } = Astro.props;
+const data = entry?.data ?? frontmatter ?? {};
+const affiliation = Array.isArray(data.affiliation)
+  ? data.affiliation.filter((value): value is string => typeof value === "string")
+  : [];
+const contact = Array.isArray(data.contact)
+  ? data.contact.filter(
+      (value): value is ContactItem =>
+        typeof value === "object" &&
+        value !== null &&
+        typeof value.label === "string" &&
+        typeof value.value === "string" &&
+        (value.href === undefined || typeof value.href === "string"),
+    )
+  : [];
+const layoutProps = Astro.props as ComponentProps<typeof AcademicLayout>;
+---
+
+<AcademicLayout {...layoutProps}>
+  <div class="astroprint-meta">
+    <div class="astroprint-col">
+      {affiliation.map((line) => <p>{line}</p>)}
+    </div>
+    <div class="astroprint-col">
+      {
+        contact.map((item) => (
+          <p>
+            {item.label}: {item.href ? <SmartLink href={item.href}>{item.value}</SmartLink> : item.value}
+          </p>
+        ))
+      }
+    </div>
+  </div>
+
+  <section class="demo-example-intro">
+    <h2>About this page</h2>
+    <p>
+      <strong>{introLead}</strong> {introBody}
+    </p>
+    <p class="demo-example-links">
+      Source:{"\u2002"}{
+        sourceLinks.map((item, index) => (
+          <>
+            {index > 0 && <span class="demo-link-separator" aria-hidden="true">·</span>}
+            <SmartLink href={item.href}>{item.label}</SmartLink>
+          </>
+        ))
+      }.
+    </p>
+  </section>
+
+  <slot />
+</AcademicLayout>

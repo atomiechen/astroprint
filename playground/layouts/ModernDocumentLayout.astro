@@ -1,0 +1,20 @@
+---
+import DemoAcademicLayout from "../components/DemoAcademicLayout.astro";
+import "../styles/modern-document.css";
+
+const sourceRoot = "https://github.com/atomiechen/astroprint/blob/main/";
+---
+
+<DemoAcademicLayout
+  {...Astro.props}
+  introLead="Generated routes from one Markdown file."
+  introBody="One source powers this Web page and its separate Paged.js preview. This small wrapper keeps the built-in document structure and adds the modern theme with CSS."
+  sourceLinks={[
+    { label: "Markdown", href: `${sourceRoot}playground/content/cv/main.md` },
+    { label: "route configuration", href: `${sourceRoot}astro.config.mjs` },
+    { label: "layout", href: `${sourceRoot}playground/layouts/ModernDocumentLayout.astro` },
+    { label: "theme CSS", href: `${sourceRoot}playground/styles/modern-document.css` },
+  ]}
+>
+  <slot />
+</DemoAcademicLayout>

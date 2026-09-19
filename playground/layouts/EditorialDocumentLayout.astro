@@ -1,0 +1,22 @@
+---
+import DemoAcademicLayout from "../components/DemoAcademicLayout.astro";
+import "../styles/editorial-document.css";
+
+const sourceRoot = "https://github.com/atomiechen/astroprint/blob/main/";
+const entryId = Astro.props.entry?.id ?? "main";
+---
+
+<DemoAcademicLayout
+  {...Astro.props}
+  introLead="Generated routes from an Astro content collection."
+  introBody="The collection can publish one named entry or every document variant. This small wrapper keeps the built-in document structure and adds the editorial theme with CSS."
+  sourceLinks={[
+    { label: "Markdown", href: `${sourceRoot}playground/content/cv/${entryId}.md` },
+    { label: "collection schema", href: `${sourceRoot}playground/content.config.ts` },
+    { label: "route configuration", href: `${sourceRoot}astro.config.mjs` },
+    { label: "layout", href: `${sourceRoot}playground/layouts/EditorialDocumentLayout.astro` },
+    { label: "theme CSS", href: `${sourceRoot}playground/styles/editorial-document.css` },
+  ]}
+>
+  <slot />
+</DemoAcademicLayout>

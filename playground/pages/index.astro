@@ -1,0 +1,99 @@
+---
+import AcademicLayout from "astroprint/layouts/AcademicLayout.astro";
+import SmartLink from "../components/SmartLink.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const href = (path: string) => `${base}${path.replace(/^\/+/, "")}`;
+const sourceRoot = "https://github.com/atomiechen/astroprint/blob/main/";
+---
+
+<AcademicLayout
+  withPreviewShell={true}
+  frontmatter={{
+    title: "astroprint",
+    secondaryTitle: "Markdown to web and PDF",
+  }}
+>
+  <div class="astroprint-meta">
+    <div class="astroprint-col">
+      Create print-ready CVs and documents in Markdown, preview them as normal web pages or paged sheets,
+      and export them as PDF. Created by <SmartLink href="https://github.com/atomiechen">Atomie CHEN</SmartLink>.
+    </div>
+    <div class="astroprint-col">
+      <SmartLink href="https://github.com/atomiechen/astroprint">astroprint source</SmartLink><br />
+      <SmartLink href="https://www.npmjs.com/package/astroprint">npm package</SmartLink><br />
+      <SmartLink href={`${sourceRoot}playground/pages/index.astro`}>This page's source</SmartLink>
+    </div>
+  </div>
+
+  <h2>Examples: 3 ways to publish Markdown</h2>
+  <p>
+    These examples use a CV so you can compare the same concrete document across every path. The same
+    approaches work for reports, notes, and other Markdown-first documents. Start with a normal Astro
+    Markdown page; add generated routes for a separate Paged.js preview, or use an Astro content collection
+    when several documents share one structure.
+  </p>
+  <ul class="two-col">
+    <li class="astroprint-entry">
+      <div class="astroprint-col">
+        <strong>1. Astro Markdown page</strong> — easiest start · default theme<br />
+        Put a <code>.md</code> file in <code>src/pages</code> and select the astroprint layout in its
+        frontmatter. Astro creates the URL; no injected-route configuration is needed. The page is
+        responsive and browser-printable, and <code>withPreviewShell</code> adds Home and Print controls.
+      </div>
+      <div class="astroprint-col">
+        <SmartLink href={href("cv-native/")} target="_blank">Open example</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/pages/cv-native.md`}>Page source</SmartLink>
+      </div>
+    </li>
+    <li class="astroprint-entry">
+      <div class="astroprint-col">
+        <strong>2. Generated routes from one Markdown file</strong> — Web + Paged · modern theme<br />
+        Keep Markdown outside <code>src/pages</code> and let astroprint create a normal route plus an optional
+        Paged.js preview route from the same source. This example also shows a small custom layout and CSS
+        theme built on top of the academic layout.
+      </div>
+      <div class="astroprint-col">
+        <SmartLink href={href("cv-markdown/")} target="_blank">Web example</SmartLink> · <SmartLink href={href("cv-markdown-preview/")} target="_blank">Paged example</SmartLink><br />
+        <SmartLink href={`${sourceRoot}astro.config.mjs`}>Route configuration</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/content/cv/main.md`}>Markdown source</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/layouts/ModernDocumentLayout.astro`}>Layout</SmartLink> · <SmartLink href={`${sourceRoot}playground/styles/modern-document.css`}>Theme CSS</SmartLink>
+      </div>
+    </li>
+    <li class="astroprint-entry">
+      <div class="astroprint-col">
+        <strong>3. Generated routes from a content collection</strong> — structured · editorial theme<br />
+        <SmartLink href="https://docs.astro.build/en/guides/content-collections/">Content collections</SmartLink> are an Astro
+        feature for organizing and validating related content. Render one named entry, or publish the whole
+        collection when you maintain several CV variants; the whole-collection form is the batch version of
+        the single-entry form.
+      </div>
+      <div class="astroprint-col">
+        One entry: <SmartLink href={href("cv-entry/")} target="_blank">Web example</SmartLink> · <SmartLink href={href("cv-entry-preview/")} target="_blank">Paged example</SmartLink><br />
+        Whole collection: <SmartLink href={href("cv/")} target="_blank">Main Web</SmartLink> · <SmartLink href={href("cv-preview/")} target="_blank">Main Paged</SmartLink><br />
+        Variant: <SmartLink href={href("cv/selected/")} target="_blank">Selected Work</SmartLink> · <SmartLink href={href("cv-preview/selected/")} target="_blank">Paged</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/content.config.ts`}>Collection schema</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/content/cv/main.md`}>Main source</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/content/cv/selected.md`}>Variant source</SmartLink><br />
+        <SmartLink href={`${sourceRoot}playground/layouts/EditorialDocumentLayout.astro`}>Layout</SmartLink> · <SmartLink href={`${sourceRoot}playground/styles/editorial-document.css`}>Theme CSS</SmartLink>
+      </div>
+    </li>
+  </ul>
+
+  <h2>How the pages connect</h2>
+  <ol>
+    <li>This page explains the authoring choices and links to their source.</li>
+    <li>The native Markdown page is responsive and browser-printable on its Astro-created URL.</li>
+    <li>Generated examples pair a <strong>Web</strong> route with a <strong>Paged</strong> route from the same source.</li>
+    <li>The Paged route visualizes page breaks and page count from the same source.</li>
+    <li><strong>Home</strong> returns here from every document route.</li>
+    <li>PDF export renders a Web route; it is an output format, not a fourth authoring path.</li>
+  </ol>
+
+  <h2>Start a project</h2>
+  <p>
+    Install the integration with <code>npx astro add astroprint</code>, then start with a normal Markdown page
+    or configure generated routes when you need them. The <SmartLink href="https://github.com/atomiechen/astroprint#readme">README</SmartLink>
+    includes the complete setup and PDF backend instructions.
+  </p>
+</AcademicLayout>

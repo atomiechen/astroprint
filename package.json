@@ -78,6 +78,8 @@
     "vendor:pagedjs:minify": "esbuild src/vendor/pagedjs-0.4.3.esm.js --minify --format=esm --outfile=src/vendor/pagedjs-0.4.3.esm.min.js",
     "prepack": "pnpm build",
     "astro:build": "astro check && astro build",
+    "demo:verify": "node scripts/verify-demo.mjs",
+    "verify": "pnpm build && ASTROPRINT_DEMO_BASE=/astroprint pnpm astro:build && ASTROPRINT_DEMO_BASE=/astroprint pnpm demo:verify",
     "astro:preview": "astro preview",
     "astro:check": "astro check"
   },
@@ -95,6 +97,7 @@
     "astro": "^5.7.10",
     "esbuild": "^0.27.7",
     "playwright": "^1.60.0",
+    "rehype-external-links": "^3.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },

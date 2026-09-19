@@ -1,0 +1,19 @@
+---
+interface Props {
+  href: string;
+  class?: string;
+  target?: string;
+  rel?: string;
+}
+
+const { href, class: className, target, rel } = Astro.props;
+const opensNewTab = /^https?:\/\//i.test(href);
+const finalTarget = target ?? (opensNewTab ? "_blank" : undefined);
+const finalRel =
+  finalTarget === "_blank"
+    ? Array.from(new Set([...(rel?.split(/\s+/).filter(Boolean) ?? []), "noopener", "noreferrer"]))
+        .join(" ")
+    : rel;
+---
+
+<a class={className} href={href} target={finalTarget} rel={finalRel}><slot /></a>

@@ -1,0 +1,56 @@
+:root {
+  --astroprint-page-margin-x: 21mm;
+  --astroprint-ink: #27231d;
+  --astroprint-link: #2f6655;
+  --astroprint-serif-font: Georgia, "Times New Roman", "Songti SC", serif;
+  --astroprint-title-size: 19pt;
+  --astroprint-line-height: 1.47;
+}
+
+.astroprint-title {
+  padding-bottom: 9pt;
+}
+
+.astroprint-document h2 {
+  color: #2f6655;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 11pt;
+  letter-spacing: 0.045em;
+  text-transform: none;
+}
+
+.astroprint-document h2::after {
+  display: none;
+}
+
+.demo-example-intro {
+  margin: 3pt 0 18pt;
+  padding: 9pt 11pt;
+  background: #f6f2e9;
+  break-inside: avoid;
+}
+
+.demo-example-intro h2 {
+  display: block;
+  margin: 0 0 4pt;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 8.5pt;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-example-intro p {
+  font-size: 9.6pt;
+  line-height: 1.42;
+}
+
+.demo-example-intro .demo-example-links {
+  margin-top: 5pt;
+  color: #5e625f;
+  font-size: 8.8pt;
+}
+
+.demo-example-links .demo-link-separator {
+  margin: 0 0.48em;
+  color: #8b8478;
+}
