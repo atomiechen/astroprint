@@ -6,6 +6,7 @@ import PreviewShell from "../components/PreviewShell.astro";
 
 type Props = ComponentProps<typeof PreviewShell> & {
   withPreviewShell?: boolean;
+  faviconHref?: string | false;
   frontmatter?: Record<string, unknown>;
   entry?: {
     id?: string;
@@ -17,6 +18,12 @@ const { entry, frontmatter } = Astro.props;
 const withPreviewShell =
   Astro.props.withPreviewShell ??
   (typeof frontmatter?.withPreviewShell === "boolean" ? frontmatter.withPreviewShell : false);
+const frontmatterFavicon = frontmatter?.faviconHref;
+const faviconHref =
+  Astro.props.faviconHref ??
+  (typeof frontmatterFavicon === "string" || frontmatterFavicon === false
+    ? frontmatterFavicon
+    : undefined);
 const title =
   (typeof entry?.data?.title === "string" ? entry.data.title : undefined) ??
   (typeof frontmatter?.title === "string" ? frontmatter.title : undefined) ??
@@ -26,7 +33,7 @@ const secondaryTitle =
   (typeof frontmatter?.secondaryTitle === "string" ? frontmatter.secondaryTitle : undefined);
 ---
 
-<BaseLayout pageTitle={title}>
+<BaseLayout pageTitle={title} faviconHref={faviconHref}>
   {
     withPreviewShell ? (
       <PreviewShell {...Astro.props}>
