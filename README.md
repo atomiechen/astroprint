@@ -23,7 +23,7 @@ The demo home explains three progressive authoring paths: an Astro-native Markdo
 pnpm dev
 ```
 
-Then open `http://localhost:4321/`, `/cv/`, or `/cv-preview/`. The online demo is deployed to GitHub Pages from `site-dist/` by the `Deploy Demo to GitHub Pages` workflow.
+Then open `http://localhost:4321/`, `/cv/`, or `/cv-preview/`. The `CI and Demo` workflow verifies the package and generated site once, then deploys that same `site-dist/` artifact to GitHub Pages after pushes to `main`.
 
 ## Quick Start
 
